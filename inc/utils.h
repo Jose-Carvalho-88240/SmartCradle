@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <linux/types.h>
 
 #define BCM2711_PERI_BASE       0xfe000000
@@ -30,3 +33,5 @@ void SetGPIOFunction(struct GpioRegisters *s_pGpioRegisters, int GPIO, int funct
 void SetGPIOPull(struct GpioRegisters *s_pGpioRegisters, int GPIO, int pullCode);
 void SetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO, bool outputValue);
 int GetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO);
+
+#endif

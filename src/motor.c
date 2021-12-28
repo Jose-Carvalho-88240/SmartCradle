@@ -1,4 +1,4 @@
-#include "motor.h"
+#include "../inc/motor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

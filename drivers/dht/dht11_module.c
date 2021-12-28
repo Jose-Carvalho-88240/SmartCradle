@@ -12,7 +12,7 @@
 #include <linux/io.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
-#include "utils.h"
+#include "../inc/dht.h"
 
 #define DEVICE_NAME "dht110"
 #define CLASS_NAME "dht11Class"

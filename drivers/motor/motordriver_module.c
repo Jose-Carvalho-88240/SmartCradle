@@ -11,7 +11,7 @@
 #include <linux/mm.h>
 #include <linux/io.h>
 
-#include "utils.h"
+#include "../inc/utils.h"
 
 #define DEVICE_NAME "motordriver0"
 #define CLASS_NAME "motordriverClass"

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "dht.h"
+#include "../inc/dht.h"
 
 dht11_t data;
 

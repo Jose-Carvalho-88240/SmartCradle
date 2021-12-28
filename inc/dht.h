@@ -1,3 +1,6 @@
+#ifndef DHT_H
+#define DHT_H
+
 #include <linux/types.h>
 
 typedef struct DHT11
@@ -12,3 +15,5 @@ typedef struct DHT11
 
 void initDHT11();
 dht11_t readDHT11();
+
+#endif
