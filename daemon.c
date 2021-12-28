@@ -35,6 +35,9 @@ void *tWatchStreamFlag(void *arg)
 
 }
 
+void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param);
+void checkErrors(int status);
+
 int main(int argc, char *args[])
 {
     /*
@@ -107,12 +110,12 @@ int main(int argc, char *args[])
 	pthread_attr_getschedpolicy (&thread_attr, &thread_policy);
 	pthread_attr_getschedparam (&thread_attr, &thread_param);
 
-	SetupThread(detectCryingPrio,&thread_attr,&thread_param);
+	initThread(detectCryingPrio,&thread_attr,&thread_param);
 	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
 	anyError = pthread_create (&detectCryingID, &thread_attr, tDetectCrying, NULL);
     checkErrors(anyError);
 
-	SetupThread(watchFlagPrio,&thread_attr,&thread_param);
+	initThread(watchFlagPrio,&thread_attr,&thread_param);
 	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
     anyError = pthread_create (&watchStreamFlagID, &thread_attr, tWatchStreamFlag, NULL);
     checkErrors(anyError);

@@ -134,22 +134,22 @@ int main (int argc, char *argv[])
 	pthread_attr_getschedpolicy (&thread_attr, &thread_policy);
 	pthread_attr_getschedparam (&thread_attr, &thread_param);
 
-	SetupThread(sensorPrio,&thread_attr,&thread_param);
+	initThread(sensorPrio,&thread_attr,&thread_param);
 	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
 	anyError = pthread_create (&readSensorID, &thread_attr, tReadSensor, NULL);
     checkErrors(anyError);
 
-	SetupThread(streamPrio,&thread_attr,&thread_param);
+	initThread(streamPrio,&thread_attr,&thread_param);
 	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
     anyError = pthread_create (&StartStopStreamID, &thread_attr, tStartStopStream, NULL);
     checkErrors(anyError);
 
-    SetupThread(motorPrio,&thread_attr,&thread_param);
+    initThread(motorPrio,&thread_attr,&thread_param);
 	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
     anyError = pthread_create (&StartStopMotorID, &thread_attr, tStartStopMotor, NULL);
     checkErrors(anyError);
 
-    SetupThread(updateflagsPrio,&thread_attr,&thread_param);
+    initThread(updateflagsPrio,&thread_attr,&thread_param);
 	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
     anyError = pthread_create (&updateFlagsID, &thread_attr, tUpdateFlags, NULL);
     checkErrors(anyError);
