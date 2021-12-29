@@ -57,3 +57,8 @@ int stopMotor(){
 
     return 1;
 }
+
+int getMotorStatus()
+{
+    return motorRunning;
+}

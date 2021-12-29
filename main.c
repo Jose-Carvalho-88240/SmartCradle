@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <linux/types.h>
 #include <signal.h>
+#include <sys/time.h>
 #include "./inc/database.h"
 #include "./inc/wifi.h"
 #include "./inc/microphone.h"
@@ -26,11 +27,12 @@
 #define updateflagsPrio 3
 #define sensorPrio 4
 
+#define motorTimeout 10 /* Minutes */
 bool motorFlag = 0;
 bool streamFlag = 0;
 
-pthread_mutex_t motorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; //shared variable (motorFlag)
-pthread_mutex_t streamFlag_mutex = PTHREAD_MUTEX_INITIALIZER; //shared variable (streamFlag)
+pthread_mutex_t motorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (motorFlag) */
+pthread_mutex_t streamFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (streamFlag) */
 
 int daemonPID;
 
@@ -39,18 +41,59 @@ static void signalHandler(int signo)
 	switch (signo)
 	{
 	    case (SIGALRM):
+            pthread_mutex_lock(&motorFlag_mutex);
+            motorFlag = 0;
+            //Update motor flag in database
+            pthread_mutex_unlock(&motorFlag_mutex);
 		break;
 
         case (SIGUSR1):
+            //Update notification flag in database
 		break;
 	}
 }
 
 void *tReadSensor(void *arg)
 {
+    dht11_t sensorSampling; 
+    float temperature = 0;
+    float previousTemperature = 0;
+    float humidity = 0;
+    float previousHumidity = 0;
+
+    uint8_t samplingTries = 0;
+
     while(1)
     {
+        if(readDHT11(&sensorSampling))
+            samplingTries = 0;
+        else
+        {
+            samplingTries++;
+            fprintf(stderr,"Failed to sample sensor...Trying again.\n");
+            perror("tReadSensor()");       
+        }
 
+        if(!samplingTries)
+        {
+            temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;~
+            humidity = sensorSampling.HumidityI + (float)(sensorSampling.HumidityD)/100;
+            if( (temperature != previousTemperature) || (humidity != previousHumidity) )
+            {
+                previousTemperature = temperature;
+                previousHumidity = humidity;
+                //Update temperature and humidity in database
+            }
+        }
+        else if(samplingTries == 3)
+        {
+            samplingTries = 0;
+            fprintf(stderr,"Failed to sample sensor 3 times. Ignoring...\n");
+            perror("tReadSensor()");     
+        }
+
+        /* Pause for motorTimeout minutes */
+        sleep(60 * motorTimeout); 
     }
 
 }
@@ -59,23 +102,77 @@ void *tStartStopStream (void *arg)
 {
     while(1)
     {
-
+        if(streamFlag && !getStreamStatus())
+        {
+            startLivestream();
+        }
+        else if(!streamFlag && getStreamStatus())
+        {
+            stopLivestream();
+        }
     }
 }
 
 void *tStartStopMotor (void *arg)
 {
     while(1)
-    {
+    {   
+        if(motorFlag && !getMotorStatus())
+        {
+            startMotor();
 
+            struct itimerval itv;
+            itv.it_interval.tv_sec = 60 * motorTimeout;
+            itv.it_interval.tv_usec = 0;
+            itv.it_value.tv_sec = 60 * motorTimeout;
+            itv.it_value.tv_usec = 0;
+            setitimer (ITIMER_REAL, &itv, NULL);
+        }
+        else if(!motorFlag && getMotorStatus())
+        {
+            stopMotor();
+        }
     }
 }
 
 void *tUpdateFlags(void *arg)
 {
+    bool dMotorFlag, dStreamFlag;
+    mqd_t msgq_id;
     while(1)
     {
+        /*  
+        *   Update motorFlag with the value 
+        *   from the database
+        */
+        //dMotorFlag = (read from database)
+        pthread_mutex_lock(&motorFlag_mutex);
+        motorFlag = dMotorFlag;
+        pthread_mutex_unlock(&motorFlag_mutex);
+        
+        /*  
+        *   Update streamFlag with the value 
+        *   from the database. If it changes,
+        *   the new value is sent to the daemon
+        *   via message queue
+        */
+        //dStreamFlag = (read from database)
+        pthread_mutex_lock(&streamFlag_mutex);
+        if(streamFlag != dStreamFlag)
+        {
+            msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG, NULL);
+            if (msgq_id == (mqd_t)-1) {
+                perror("In mq_open()");
+                exit(1);
+            }
+            mq_send(msgq_id, dStreamFlag, 1, 1);
+            mq_close(msgq_id);
+        }
+        streamFlag = dStreamFlag;
+        pthread_mutex_unlock(&streamFlag_mutex);
 
+        /* Pause for 5 seconds */
+        sleep(5); 
     }
 }
 

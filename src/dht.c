@@ -5,26 +5,24 @@
 #include <unistd.h>
 #include "../inc/dht.h"
 
-dht11_t data;
-
 void initDHT11(){
     system("insmod dht11.ko");
 }
 
-dht11_t readDHT11(){
+int readDHT11(dht11_t *data){
     int fd0 = open("/dev/dht110", O_WRONLY);  
     
     if(fd0 == -1)
     {
         pr_alert("Failed to open DHT11 device driver.\n");
-        return NULL;
+        return 0;
     }
 
     if(read(fd0,&data.CompleteSample, strlen(data.CompleteSample)) == 0)
     {
         pr_alert("Failed to read from device driver.\n");
         close(fd0);
-        return NULL;
+        return 0;
     }
     
     close(fd0);
@@ -38,5 +36,5 @@ dht11_t readDHT11(){
     printf("Temperature: %d.%dºC\nHumidity: %d.%d\nChecksum: %d\n",data.TemperatureI,
     data.TemperatureD,data.HumidityI,data.HumidityD,data.checksum);
     
-    return data;
+    return 1;
 }
