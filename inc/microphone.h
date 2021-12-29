@@ -1,8 +1,7 @@
 #ifndef MICROPHONE_H
 #define MICROPHONE_H
 
-int startRecording(int seconds);
+void startRecording();
 int processAudio();
-float calculateLoudness();
 
 #endif

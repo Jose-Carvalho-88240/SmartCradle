@@ -1,6 +1,15 @@
 #include "../inc/microphone.h"
+#include 
+void startRecording()
+{
+    system("ffmpeg \
+    -f alsa -ac 1 -ar 44100 -i plughw:1,0 \
+    -c:a copy \
+    -t 2 -y \
+    audiorecord.wav");
+}
 
-int startRecording(int seconds)
+static float calculateLoudness()
 {
     return 1;
 }
@@ -10,7 +19,3 @@ int processAudio()
     return 1;
 }
 
-float calculateLoudness()
-{
-    return 1;
-}

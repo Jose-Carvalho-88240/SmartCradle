@@ -45,10 +45,12 @@ static void signalHandler(int signo)
             motorFlag = 0;
             //Update motor flag in database
             pthread_mutex_unlock(&motorFlag_mutex);
+            printf("Motor flag was updated in the database.\n");
 		break;
 
         case (SIGUSR1):
             //Update notification flag in database
+            printf("Notification flag was updated in the database.\n");
 		break;
 	}
 }
@@ -66,23 +68,28 @@ void *tReadSensor(void *arg)
     while(1)
     {
         if(readDHT11(&sensorSampling))
+        {
             samplingTries = 0;
+             printf("Sensor sampling successful.\n");
+        }
         else
         {
             samplingTries++;
             fprintf(stderr,"Failed to sample sensor...Trying again.\n");
-            perror("tReadSensor()");       
+            perror("readDHT11()");       
         }
 
         if(!samplingTries)
         {
             temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;~
             humidity = sensorSampling.HumidityI + (float)(sensorSampling.HumidityD)/100;
+            printf("Temperature: %.2f | Humidity: %.2f\n", temperature, humidity);
             if( (temperature != previousTemperature) || (humidity != previousHumidity) )
             {
                 previousTemperature = temperature;
                 previousHumidity = humidity;
                 //Update temperature and humidity in database
+                printf("Temperature and Humidity were updated in the database.\n");
             }
         }
         else if(samplingTries == 3)
@@ -105,10 +112,12 @@ void *tStartStopStream (void *arg)
         if(streamFlag && !getStreamStatus())
         {
             startLivestream();
+            printf("Livestream has started.\n");
         }
         else if(!streamFlag && getStreamStatus())
         {
             stopLivestream();
+            printf("Livestream has stopped.\n");
         }
     }
 }
@@ -127,10 +136,13 @@ void *tStartStopMotor (void *arg)
             itv.it_value.tv_sec = 60 * motorTimeout;
             itv.it_value.tv_usec = 0;
             setitimer (ITIMER_REAL, &itv, NULL);
+
+            printf("Motor has started.\n");
         }
         else if(!motorFlag && getMotorStatus())
         {
             stopMotor();
+            printf("Motor has stopped.\n");
         }
     }
 }
@@ -209,6 +221,16 @@ int main (int argc, char *argv[])
     */
     signal(SIGALRM, signalHandler);
     signal(SIGUSR1, signalHandler);
+
+    /*
+    *   Call the initialization functions for the modules
+    *       @ Streaming
+    *       @ DHT11 Sensor
+    *       @ Motor Driver
+    */
+    initStream();
+    initDHT11();
+    initMotor();
 
     /*
     *   Threads initialization with predefined priorities:

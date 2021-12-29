@@ -25,14 +25,40 @@ mqd_t msgq_id;
 struct mq_attr msgq_attr;
 int localPID;
 
+bool isStreamActive = 0;
+
 void *tDetectCrying(void *arg)
 {
-
+    int ret = 0;
+    while(1)
+    {
+        if(!isStreamActive)
+        {
+            startRecording();
+            ret = processAudio();
+            if(ret)
+                kill(localPID, SIGUSR1);
+        }
+        sleep(2); 
+    }
 }
 
 void *tWatchStreamFlag(void *arg)
 {
+    msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT , S_IRWXU | S_IRWXG, NULL);
+    if (msgq_id == (mqd_t)-1) {
+		perror("In mq_open()");
+		exit(1);
+	}
 
+    while(1)
+    {
+        mq_getattr(msgq_id, &msgq_attr);
+        if(msgq_attr.curmsgs)
+        {
+           mq_receive(msgq_id, isStreamActive, 1, 1);
+        }
+    }
 }
 
 void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param);
@@ -45,17 +71,18 @@ int main(int argc, char *args[])
     */
 	msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT , S_IRWXU | S_IRWXG, NULL);
 	if (msgq_id == (mqd_t)-1) {
+        fprintf(stderr,"Message Queue ID is not valid.\n");
 		perror("In mq_open()");
 		exit(1);
 	}
 
 	mq_getattr(msgq_id, &msgq_attr);
-    mq_receive(msgq_id, localPID, 1, 1);
-    if(!localPID)
+    if(!msgq_attr.curmsgs)
     {
-        perror("PID not valid.\n");
+        fprintf(stderr,"No messages to be received.\n");
 		exit(1);
     }
+    mq_receive(msgq_id, localPID, 1, 1);
     mq_close(msgq_id);
 
     /*
