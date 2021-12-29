@@ -2,7 +2,8 @@
 #define LIVESTREAM_H
 
 void initStream();
-int startLivestream();
-int stopLivestream();
+void startLivestream();
+void stopLivestream();
+int getStreamStatus();
 
 #endif

@@ -1,16 +1,23 @@
 #include "../inc/livestream.h"
 
+static bool streamRunning;
+
 void initStream()
 {
 
 }
 
-int startLivestream()
+void startLivestream()
 {
-    return 1;
+
 }
 
-int stopLivestream()
+void stopLivestream()
 {
-    return 1;
+
+}
+
+int getStreamStatus()
+{
+    return streamRunning;
 }

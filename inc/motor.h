@@ -4,5 +4,6 @@
 void initMotor();
 int startMotor();
 int stopMotor();
+int getMotorStatus();
 
 #endif

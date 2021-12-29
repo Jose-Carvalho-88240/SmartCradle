@@ -14,6 +14,6 @@ typedef struct DHT11
 } dht11_t ;
 
 void initDHT11();
-dht11_t readDHT11();
+int readDHT11(dht11_t *data);
 
 #endif
