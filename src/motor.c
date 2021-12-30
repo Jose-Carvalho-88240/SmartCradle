@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <linux/types.h>
 
-static bool motorRunning;
+static _Bool motorRunning;
 
 void initMotor(){
     system("insmod motordriver.ko");

@@ -1,7 +1,7 @@
 #include "../inc/livestream.h"
 #include <stdlib.h>
 
-static bool streamRunning;
+static _Bool streamRunning;
 
 void initStream()
 {

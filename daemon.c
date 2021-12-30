@@ -25,7 +25,7 @@ mqd_t msgq_id;
 struct mq_attr msgq_attr;
 int localPID;
 
-bool isStreamActive = 0;
+_Bool isStreamActive = 0;
 
 void *tDetectCrying(void *arg)
 {
@@ -54,7 +54,7 @@ void *tWatchStreamFlag(void *arg)
     while(1)
     {
         mq_getattr(msgq_id, &msgq_attr);
-        if(msgq_attr.curmsgs)
+        if(msgq_attr.mq_curmsgs)
         {
            mq_receive(msgq_id, isStreamActive, 1, 1);
         }
@@ -77,7 +77,7 @@ int main(int argc, char *args[])
 	}
 
 	mq_getattr(msgq_id, &msgq_attr);
-    if(!msgq_attr.curmsgs)
+    if(!msgq_attr.mq_curmsgs)
     {
         fprintf(stderr,"No messages to be received.\n");
 		exit(1);

@@ -28,8 +28,8 @@
 #define sensorPrio 4
 
 #define motorTimeout 10 /* Minutes */
-bool motorFlag = 0;
-bool streamFlag = 0;
+_Bool motorFlag = 0;
+_Bool streamFlag = 0;
 
 pthread_mutex_t motorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (motorFlag) */
 pthread_mutex_t streamFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (streamFlag) */
@@ -63,7 +63,7 @@ void *tReadSensor(void *arg)
     float humidity = 0;
     float previousHumidity = 0;
 
-    uint8_t samplingTries = 0;
+    u_int8_t samplingTries = 0;
 
     while(1)
     {
@@ -81,7 +81,7 @@ void *tReadSensor(void *arg)
 
         if(!samplingTries)
         {
-            temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;~
+            temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;
             humidity = sensorSampling.HumidityI + (float)(sensorSampling.HumidityD)/100;
             printf("Temperature: %.2f | Humidity: %.2f\n", temperature, humidity);
             if( (temperature != previousTemperature) || (humidity != previousHumidity) )
@@ -149,7 +149,7 @@ void *tStartStopMotor (void *arg)
 
 void *tUpdateFlags(void *arg)
 {
-    bool dMotorFlag, dStreamFlag;
+    _Bool dMotorFlag, dStreamFlag;
     mqd_t msgq_id;
     while(1)
     {

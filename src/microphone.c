@@ -1,5 +1,5 @@
 #include "../inc/microphone.h"
-#include 
+
 void startRecording()
 {
     system("ffmpeg \
