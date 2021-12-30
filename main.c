@@ -295,11 +295,7 @@ void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *
         perror("initThread()");
         exit(1);
     }
-
-	pthread_param->sched_priority = priority;
-
-	pthread_attr_setschedparam (pthread_attr, pthread_param);
-}
+bool
 
 void checkErrors(int status)
 {
