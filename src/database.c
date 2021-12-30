@@ -70,7 +70,7 @@ int get_swing_flag()
     Py_Initialize();
 
     //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"test");
+    pName = PyUnicode_FromString((char*)"database");
 
     //Import the Python Script
     pModule = PyImport_Import(pName);
@@ -142,7 +142,7 @@ int get_live_flag()
     Py_Initialize();
 
     //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"test");
+    pName = PyUnicode_FromString((char*)"database");
 
     //Import the Python Script
     pModule = PyImport_Import(pName);
@@ -214,7 +214,7 @@ int send_notification_flag( int notification_flag)
     Py_Initialize();
 
     //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"test");
+    pName = PyUnicode_FromString((char*)"database");
 
     //Import the Python Script
     pModule = PyImport_Import(pName);
