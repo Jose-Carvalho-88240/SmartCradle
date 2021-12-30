@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <linux/types.h>
 
-static _Bool motorRunning;
+static _Bool motorRunning; /* Status of the motor */
 
 void initMotor(){
     system("insmod motordriver.ko");
@@ -58,7 +58,7 @@ int stopMotor(){
     return 1;
 }
 
-int getMotorStatus()
+_Bool getMotorStatus()
 {
     return motorRunning;
 }

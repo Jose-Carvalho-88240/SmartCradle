@@ -1,9 +1,36 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
+/**
+ * @brief Load the motor driver device driver
+ */
 void initMotor();
+
+/**
+ * @brief Start the motor
+ * 
+ * Writes to the device driver so that the motor
+ * is enabled. 
+ * 
+ * @return int: Returns 0 on error, or 1 if sucessful
+ */
 int startMotor();
+
+/**
+ * @brief Start the motor
+ * 
+ * Writes to the device driver so that the motor
+ * is disabled.
+ *
+ * @return int: Returns 0 on error, or 1 if sucessful
+ */
 int stopMotor();
-int getMotorStatus();
+
+/**
+ * @brief Get the Motor Status object
+ * 
+ * @return bool: Returns the status of the motor
+ */
+_Bool getMotorStatus();
 
 #endif

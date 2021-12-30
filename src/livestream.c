@@ -1,7 +1,7 @@
 #include "../inc/livestream.h"
 #include <stdlib.h>
 
-static _Bool streamRunning;
+static _Bool streamRunning; /* Status of the stream */
 
 void initStream()
 {
@@ -26,7 +26,7 @@ void stopLivestream()
     system("pidof ffmpeg | xargs kill -9");
 }
 
-int getStreamStatus()
+_Bool getStreamStatus()
 {
     return streamRunning;
 }

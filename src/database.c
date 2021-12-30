@@ -1,5 +1,5 @@
 #include "../inc/database.h"
-//#include </home/joao/buildroot-aulas-2021.02.6/output/host/include/python3.9/Python.h>
+//#include <~/buildroot-aulas-2021.02.6/output/host/include/python3.9/Python.h>
 #include <python3.8/Python.h>  //change to the above one for compilling to the board
 
 
