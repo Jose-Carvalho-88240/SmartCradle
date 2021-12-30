@@ -124,9 +124,6 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 		sensorData.TemperatureI = sensorData.CompleteSample[2];
 		sensorData.TemperatureD = sensorData.CompleteSample[3];
 
-		pr_alert("FTemperature: %d.%dC\nHumidity: %d.%d\nChecksum: %d\n",sensorData.TemperatureI, sensorData.TemperatureD, \
-		sensorData.HumidityI, sensorData.HumidityD,sensorData.checksum);
-
 		int ret;
 		do{
 			ret=copy_to_user(p_buff,(void *)&sensorData,sizeof(sensorData));
