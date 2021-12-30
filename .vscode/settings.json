@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "dht.h": "c",
+        "utils.h": "c"
     }
 }

@@ -54,7 +54,7 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 
 	dht11_t sensorData;
 
-	pr_alert("%s: called (%u)\n",__FUNCTION__,len);
+	pr_alert("%s: called\n",__FUNCTION__);
 	
 	if(unlikely(pfile->private_data == NULL))
 		return -EFAULT;
@@ -124,7 +124,7 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 		sensorData.TemperatureI = sensorData.CompleteSample[2];
 		sensorData.TemperatureD = sensorData.CompleteSample[3];
 
-		pr_alert("Temperature: %d.%dC\nHumidity: %d.%d\nChecksum: %d\n",sensorData.TemperatureI, sensorData.TemperatureD, \
+		pr_alert("FTemperature: %d.%dC\nHumidity: %d.%d\nChecksum: %d\n",sensorData.TemperatureI, sensorData.TemperatureD, \
 		sensorData.HumidityI, sensorData.HumidityD,sensorData.checksum);
 
 		int ret;
