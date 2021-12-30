@@ -15,7 +15,7 @@ int send_temp_hum( float temp, float hum)
     Py_Initialize();
 
     //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"test");
+    pName = PyUnicode_FromString((char*)"database");
 
     //Import the Python Script
     pModule = PyImport_Import(pName);
@@ -34,7 +34,7 @@ int send_temp_hum( float temp, float hum)
     Py_DECREF(pModule);
 
     //pFunc is a reference to the function in Python
-    pFunc = PyDict_GetItemString(pDict, (char*)"multiply");
+    pFunc = PyDict_GetItemString(pDict, (char*)"send_temp_hum");
 
     //Cleanup
     Py_DECREF(pDict);
