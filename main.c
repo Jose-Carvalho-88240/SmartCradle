@@ -88,7 +88,7 @@ void *tReadSensor(void *arg)
             {
                 previousTemperature = temperature;
                 previousHumidity = humidity;
-                //Update temperature and humidity in database
+                send_temp_hum(previousTemperature,previousHumidity);
                 printf("Temperature and Humidity were updated in the database.\n");
             }
         }
@@ -157,7 +157,7 @@ void *tUpdateFlags(void *arg)
         *   Update motorFlag with the value 
         *   from the database
         */
-        //dMotorFlag = (read from database)
+        dMotorFlag = get_swing_flag();
         pthread_mutex_lock(&motorFlag_mutex);
         motorFlag = dMotorFlag;
         pthread_mutex_unlock(&motorFlag_mutex);
@@ -168,7 +168,7 @@ void *tUpdateFlags(void *arg)
         *   the new value is sent to the daemon
         *   via message queue
         */
-        //dStreamFlag = (read from database)
+        dStreamFlag = get_live_flag();
         pthread_mutex_lock(&streamFlag_mutex);
         if(streamFlag != dStreamFlag)
         {
@@ -295,7 +295,7 @@ void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *
         perror("initThread()");
         exit(1);
     }
-bool
+}
 
 void checkErrors(int status)
 {
