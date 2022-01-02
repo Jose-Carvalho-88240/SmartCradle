@@ -1,7 +1,5 @@
 #include "../inc/database.h"
-//#include <~/buildroot-aulas-2021.02.6/output/host/include/python3.9/Python.h>
-#include <python3.8/Python.h>  //change to the above one for compilling to the board
-
+#include </home/carvalho/Downloads/buildroot/buildroot-2021.02.6/output/host/include/python3.9/Python.h>
 
 int send_temp_hum( float temp, float hum)
 {

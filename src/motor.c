@@ -16,7 +16,7 @@ int startMotor(){
     int fd0 = open("/dev/motordriver0", O_WRONLY);   
     if(fd0 == -1)
     {
-        pr_alert("Failed to open motor driver device driver.\n");
+        printf("Failed to open motor driver device driver.\n");
         return 0;
     }
 
@@ -24,7 +24,7 @@ int startMotor(){
 
     if(write(fd0, &motorRunning, 1) == -1)
     {
-        pr_alert("Failed to write on device driver.\n");
+        printf("Failed to write on device driver.\n");
         motorRunning=0;
         close(fd0);
         return 0;
@@ -39,7 +39,7 @@ int stopMotor(){
     int fd0 = open("/dev/motordriver0", O_WRONLY);   
     if(fd0 == -1)
     {
-        pr_alert("Failed to open motor driver device driver.\n");
+        printf("Failed to open motor driver device driver.\n");
         return 0;
     }
 
@@ -47,7 +47,7 @@ int stopMotor(){
 
     if(write(fd0, &motorRunning, 1) == -1)
     {
-        pr_alert("Failed to write on device driver.\n");
+        printf("Failed to write on device driver.\n");
         motorRunning=1;
         close(fd0);
         return 0;

@@ -11,12 +11,12 @@
 #include <linux/types.h>
 #include <signal.h>
 #include <sys/time.h>
-#include "./inc/database.h"
-#include "./inc/wifi.h"
-#include "./inc/microphone.h"
-#include "./inc/livestream.h"
-#include "./inc/motor.h"
-#include "./inc/dht.h"
+#include "../inc/database.h"
+#include "../inc/wifi.h"
+#include "../inc/microphone.h"
+#include "../inc/livestream.h"
+#include "../inc/motor.h"
+#include "../inc/dht.h"
 
 #define MSGQOBJ_NAME    "/mqLocalDaemon"
 #define MAX_MSG_LEN     15
@@ -49,7 +49,7 @@ static void signalHandler(int signo)
 		break;
 
         case (SIGUSR1):
-            //Update notification flag in database
+            send_notification_flag(1);
             printf("Notification flag was updated in the database.\n");
 		break;
 	}
@@ -177,7 +177,7 @@ void *tUpdateFlags(void *arg)
                 perror("In mq_open()");
                 exit(1);
             }
-            mq_send(msgq_id, dStreamFlag, 1, 1);
+            mq_send(msgq_id, (int)dStreamFlag, 1, 1);
             mq_close(msgq_id);
         }
         streamFlag = dStreamFlag;
@@ -211,7 +211,7 @@ int main (int argc, char *argv[])
     /*
     *   Call the Daemon
     */
-    system("./daemon");
+    system("./daemon.elf");
     
     /*
     *   Define the signal handler

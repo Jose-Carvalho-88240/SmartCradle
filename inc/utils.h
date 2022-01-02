@@ -31,15 +31,15 @@
  */
 struct GpioRegisters
 {
-	uint32_t GPFSEL[6];
-	uint32_t Reserved1;
-	uint32_t GPSET[2];
-	uint32_t Reserved2;
-	uint32_t GPCLR[2];
-	uint32_t Reserved3;
-	uint32_t GPLEV[2];
-	uint32_t Reserved4[42];
-	uint32_t GPIO_PUP_PDN_CNTRL_REG[4];
+	unsigned int GPFSEL[6];
+	unsigned int Reserved1;
+	unsigned int GPSET[2];
+	unsigned int Reserved2;
+	unsigned int GPCLR[2];
+	unsigned int Reserved3;
+	unsigned int GPLEV[2];
+	unsigned int Reserved4[42];
+	unsigned int GPIO_PUP_PDN_CNTRL_REG[4];
 };
 
 /**
@@ -67,7 +67,7 @@ void SetGPIOPull(struct GpioRegisters *s_pGpioRegisters, int GPIO, int pullCode)
  * @param GPIO : GPIO Pin
  * @param outputValue : Value desired for pin
  */
-void SetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO, bool outputValue);
+void SetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO, _Bool outputValue);
 
 /**
  * @brief Get GPIO Pin value

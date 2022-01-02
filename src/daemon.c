@@ -56,7 +56,7 @@ void *tWatchStreamFlag(void *arg)
         mq_getattr(msgq_id, &msgq_attr);
         if(msgq_attr.mq_curmsgs)
         {
-           mq_receive(msgq_id, isStreamActive, 1, 1);
+           mq_receive(msgq_id, (int)isStreamActive, 1, 1);
         }
     }
 }

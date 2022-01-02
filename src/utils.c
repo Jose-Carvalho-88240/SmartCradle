@@ -12,7 +12,7 @@ void SetGPIOFunction(struct GpioRegisters *s_pGpioRegisters, int GPIO, int funct
 	s_pGpioRegisters->GPFSEL[registerIndex] = (oldValue & ~mask) | ((functionCode << bit) & mask);
 }
 
-void SetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO, bool outputValue) {
+void SetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO, _Bool outputValue) {
 
 	if (outputValue)
 		s_pGpioRegisters->GPSET[GPIO / 32] = (1 << (GPIO % 32));

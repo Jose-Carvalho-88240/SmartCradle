@@ -1,8 +1,6 @@
 #ifndef DHT_H
 #define DHT_H
 
-#include <linux/types.h>
-
 /**
  * @brief DHT11 Data structure
  * 		@ CompleteSample: receives all the
@@ -22,19 +20,18 @@
  */
 typedef struct DHT11
 {
-	u_int8_t CompleteSample[5];
-	u_int8_t TemperatureI;
-	u_int8_t TemperatureD;
-	u_int8_t HumidityI;
-	u_int8_t HumidityD;
-    u_int8_t checksum;
+	unsigned char CompleteSample[5];
+	unsigned char TemperatureI;
+	unsigned char TemperatureD;
+	unsigned char HumidityI;
+	unsigned char HumidityD;
+    	unsigned char checksum;
 } dht11_t ;
 
 /**
  * @brief Loads the sensor device driver
- * 
  */
-void initDHT11();
+void initDHT11(void);
 
 /**
  * @brief Sample from the sensor
