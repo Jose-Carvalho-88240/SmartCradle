@@ -1,41 +1,15 @@
 #include "../inc/database.h"
-#include </home/carvalho/Downloads/buildroot/buildroot-2021.02.6/output/host/include/python3.9/Python.h>
+
+//includes move to HEADER file
+
+PyObject *pName, *pModule, *pDict;
+PyObject *pFunc, *pResult;
+
 
 int send_temp_hum( float temp, float hum)
 {
-    PyObject *pName, *pModule, *pDict;
-    PyObject *pFunc, *pResult;
-
-    //Set PYTHONPATH to working directory
-    setenv("PYTHONPATH",".",1);
-
-    //Initialize the Python Interpreter
-    Py_Initialize();
-
-    //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"database");
-
-    //Import the Python Script
-    pModule = PyImport_Import(pName);
-
-    if(pModule == NULL)
-    {
-        printf("No module with that name");
-        return -ERROR;
-    }
-
-    //Get the dictionary referent to the imported module
-    pDict = PyModule_GetDict(pModule);
-
-    //Cleanup
-    Py_DECREF(pName);
-    Py_DECREF(pModule);
-
     //pFunc is a reference to the function in Python
     pFunc = PyDict_GetItemString(pDict, (char*)"send_temp_hum");
-
-    //Cleanup
-    Py_DECREF(pDict);
 
     //Check if its callable
     if (PyCallable_Check(pFunc))
@@ -53,44 +27,13 @@ int send_temp_hum( float temp, float hum)
     Py_DECREF(pFunc);
     Py_XDECREF(pResult);
 
-    Py_FinalizeEx();
+    return 1;
 }
 
 int get_swing_flag()
 {
-    PyObject *pName, *pModule, *pDict;
-    PyObject *pFunc, *pResult;
-
-    //Set PYTHONPATH to working directory
-    setenv("PYTHONPATH",".",1);
-
-    //Initialize the Python Interpreter
-    Py_Initialize();
-
-    //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"database");
-
-    //Import the Python Script
-    pModule = PyImport_Import(pName);
-
-    if(pModule == NULL)
-    {
-        printf("No module with that name");
-        return -ERROR;
-    }
-
-    //Get the dictionary referent to the imported module
-    pDict = PyModule_GetDict(pModule);
-
-    //Cleanup
-    Py_DECREF(pName);
-    Py_DECREF(pModule);
-
     //pFunc is a reference to the function in Python
     pFunc = PyDict_GetItemString(pDict, (char*)"get_swing_flag");
-
-    //Cleanup
-    Py_DECREF(pDict);
 
     //Check if its callable
     if (PyCallable_Check(pFunc))
@@ -124,45 +67,13 @@ int get_swing_flag()
     Py_DECREF(pFunc);
     Py_XDECREF(pResult);
 
-    Py_FinalizeEx();
     return aux;
 }
 
 int get_live_flag()
 {
-    PyObject *pName, *pModule, *pDict;
-    PyObject *pFunc, *pResult;
-
-    //Set PYTHONPATH to working directory
-    setenv("PYTHONPATH",".",1);
-
-    //Initialize the Python Interpreter
-    Py_Initialize();
-
-    //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"database");
-
-    //Import the Python Script
-    pModule = PyImport_Import(pName);
-
-    if(pModule == NULL)
-    {
-        printf("No module with that name");
-        return -ERROR;
-    }
-
-    //Get the dictionary referent to the imported module
-    pDict = PyModule_GetDict(pModule);
-
-    //Cleanup
-    Py_DECREF(pName);
-    Py_DECREF(pModule);
-
     //pFunc is a reference to the function in Python
     pFunc = PyDict_GetItemString(pDict, (char*)"get_live_flag");
-
-    //Cleanup
-    Py_DECREF(pDict);
 
     //Check if its callable
     if (PyCallable_Check(pFunc))
@@ -196,45 +107,13 @@ int get_live_flag()
     Py_DECREF(pFunc);
     Py_XDECREF(pResult);
 
-    Py_FinalizeEx();
     return aux;
 }
 
 int send_notification_flag( int notification_flag)
 {
-    PyObject *pName, *pModule, *pDict;
-    PyObject *pFunc, *pResult;
-
-    //Set PYTHONPATH to working directory
-    setenv("PYTHONPATH",".",1);
-
-    //Initialize the Python Interpreter
-    Py_Initialize();
-
-    //Translate from a C string to Python Code
-    pName = PyUnicode_FromString((char*)"database");
-
-    //Import the Python Script
-    pModule = PyImport_Import(pName);
-
-    if(pModule == NULL)
-    {
-        printf("No module with that name");
-        return -ERROR;
-    }
-
-    //Get the dictionary referent to the imported module
-    pDict = PyModule_GetDict(pModule);
-
-    //Cleanup
-    Py_DECREF(pName);
-    Py_DECREF(pModule);
-
     //pFunc is a reference to the function in Python
     pFunc = PyDict_GetItemString(pDict, (char*)"send_notification_flag");
-
-    //Cleanup
-    Py_DECREF(pDict);
 
     //Check if its callable
     if (PyCallable_Check(pFunc))
@@ -252,6 +131,27 @@ int send_notification_flag( int notification_flag)
     Py_DECREF(pFunc);
     Py_XDECREF(pResult);
 
-    Py_FinalizeEx();
+    return 1;
+}
+
+void initDatabase()
+{
+       //Translate from a C string to Python Code
+    pName = PyUnicode_FromString((char*)"database");
+
+    //Import the Python Script
+    pModule = PyImport_Import(pName);
+
+    if(pModule == NULL)
+    {
+        printf("No module with that name");
+    }
+
+    //Get the dictionary referent to the imported module
+    pDict = PyModule_GetDict(pModule);
+
+    //Cleanup
+    Py_DECREF(pName);
+    Py_DECREF(pModule);
 }
 

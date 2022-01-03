@@ -151,6 +151,8 @@ void *tUpdateFlags(void *arg)
 {
     _Bool dMotorFlag, dStreamFlag;
     mqd_t msgq_id;
+    Py_Initialize();
+    initDatabase();
     while(1)
     {
         /*  
@@ -186,6 +188,7 @@ void *tUpdateFlags(void *arg)
         /* Pause for 5 seconds */
         sleep(5); 
     }
+    Py_FinalizeEx(); // for redundancy purposes
 }
 
 void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param);
@@ -231,7 +234,6 @@ int main (int argc, char *argv[])
     initStream();
     initDHT11();
     initMotor();
-
     /*
     *   Threads initialization with predefined priorities:
     *
