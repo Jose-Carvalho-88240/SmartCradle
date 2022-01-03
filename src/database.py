@@ -16,7 +16,7 @@ def send_temp_hum(a,b):
     "humidity": int(b),
     "temperature": int(a) 
   }
-  db.child("users").child("0").child("parameters").set(data)
+  db.child("users").child("0").child("parameters").update(data)
 
   return 1
 
@@ -80,7 +80,7 @@ def send_notification_flag(b):
   data = {
     "notification_flag": int(b) 
   }
-  db.child("users").child("0").child("parameters").set(data)
+  db.child("users").child("0").child("parameters").update(data)
 
   return 1
 
