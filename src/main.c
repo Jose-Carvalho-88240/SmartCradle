@@ -212,6 +212,12 @@ int main (int argc, char *argv[])
     mq_close(msgq_id);
 
     /*
+    *   Set Python Path to current Working Path
+    */
+    setenv("PYTHONPATH",".",1);
+
+    /*"humidity": "{:.2f}".format(float(b)),
+    "temperature": "{:.2f}".format(float(a)) 
     *   Call the Daemon
     */
     system("./daemon.elf");

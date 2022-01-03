@@ -13,8 +13,8 @@ def send_temp_hum(a,b):
 
 
   data = {
-    "humidity": int(b),
-    "temperature": int(a) 
+    "humidity": float("{:.2f}".format(b)),
+    "temperature": float("{:.2f}".format(a))
   }
   db.child("users").child("0").child("parameters").update(data)
 
