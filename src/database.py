@@ -40,7 +40,7 @@ def get_swing_flag():
   if(x == None): 
     return -1
 
-  return 1  
+  return x  
 
 def get_live_flag():
   import pyrebase
@@ -61,7 +61,7 @@ def get_live_flag():
   if(x == None): 
     return -1
     
-  return 1    
+  return x    
 
 def send_notification_flag(b):
   import pyrebase
