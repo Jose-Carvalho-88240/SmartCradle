@@ -14,7 +14,6 @@ int send_temp_hum( float temp, float hum)
 
     //Cleanup
     Py_XDECREF(pResult);
-
 }
 
 int get_swing_flag()
@@ -62,7 +61,6 @@ int get_live_flag()
     //Cleanup
     Py_XDECREF(pResult);
 
-    //Py_FinalizeEx();
     return aux;
 }
 

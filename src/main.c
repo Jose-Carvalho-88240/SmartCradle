@@ -24,17 +24,21 @@
 /* priorites of each thread */
 #define streamPrio 2
 #define motorPrio 2
-#define updateflagsPrio 3
+#define updateDatabasePrio 3
 #define sensorPrio 4
 
 #define motorTimeout 10 /* Minutes */
+
 _Bool motorFlag = 0;
 _Bool streamFlag = 0;
+_Bool sensorFlag = 0;
 
 pthread_mutex_t motorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (motorFlag) */
 pthread_mutex_t streamFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (streamFlag) */
+pthread_mutex_t sensorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (sensorFlag) */
 
-int daemonPID;
+float databaseTemperature = 0;
+float databaseHumidity = 0;
 
 static void signalHandler(int signo) 
 {
@@ -59,9 +63,7 @@ void *tReadSensor(void *arg)
 {
     dht11_t sensorSampling; 
     float temperature = 0;
-    float previousTemperature = 0;
     float humidity = 0;
-    float previousHumidity = 0;
 
     u_int8_t samplingTries = 0;
 
@@ -84,12 +86,13 @@ void *tReadSensor(void *arg)
             temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;
             humidity = sensorSampling.HumidityI + (float)(sensorSampling.HumidityD)/100;
             printf("Temperature: %.2f | Humidity: %.2f\n", temperature, humidity);
-            if( (temperature != previousTemperature) || (humidity != previousHumidity) )
+            if( (temperature != databaseTemperature) || (humidity != databaseHumidity) )
             {
-                previousTemperature = temperature;
-                previousHumidity = humidity;
-                send_temp_hum(previousTemperature,previousHumidity);
-                printf("Temperature and Humidity were updated in the database.\n");
+                pthread_mutex_lock(&sensorFlag_mutex);
+                databaseTemperature = temperature;
+                databaseHumidity = humidity;
+                sensorFlag = 1;
+                pthread_mutex_unlock(&sensorFlag_mutex);
             }
         }
         else if(samplingTries == 3)
@@ -147,7 +150,7 @@ void *tStartStopMotor (void *arg)
     }
 }
 
-void *tUpdateFlags(void *arg)
+void *tUpdateDatabase(void *arg)
 {
     _Bool dMotorFlag, dStreamFlag;
     mqd_t msgq_id;
@@ -155,6 +158,19 @@ void *tUpdateFlags(void *arg)
     initDatabase();
     while(1)
     {
+        /*  
+        *   Update temperature and humidity 
+        *   of the database
+        */
+        if(sensorFlag)
+        {
+                pthread_mutex_lock(&sensorFlag_mutex);
+                sensorFlag = 0;
+                send_temp_hum(previousTemperature,previousHumidity);
+                pthread_mutex_unlock(&sensorFlag_mutex);
+                printf("Temperature and Humidity were updated in the database.\n");
+        }
+
         /*  
         *   Update motorFlag with the value 
         *   from the database
@@ -184,7 +200,7 @@ void *tUpdateFlags(void *arg)
         }
         streamFlag = dStreamFlag;
         pthread_mutex_unlock(&streamFlag_mutex);
-
+        
         /* Pause for 5 seconds */
         sleep(5); 
     }
@@ -207,7 +223,6 @@ int main (int argc, char *argv[])
         perror("In mq_open()");
         exit(1);
     }
-
     mq_send(msgq_id, my_pid, 1, 1);
     mq_close(msgq_id);
 
@@ -216,8 +231,7 @@ int main (int argc, char *argv[])
     */
     setenv("PYTHONPATH",".",1);
 
-    /*"humidity": "{:.2f}".format(float(b)),
-    "temperature": "{:.2f}".format(float(a)) 
+    /*
     *   Call the Daemon
     */
     system("./daemon.elf");
@@ -240,13 +254,14 @@ int main (int argc, char *argv[])
     initStream();
     initDHT11();
     initMotor();
+
     /*
     *   Threads initialization with predefined priorities:
     *
     *       @ tReadSensor with priority sensorPrio
     *       @ tStartStopStream with priority streamPrio
     *       @ tStartStopMotor with priority motorPrio
-    *       @ tUpdateFlags with priority updateflagsPrio
+    *       @ tUpdateDatabase with priority updateDatabasePrio
     *   
     *   Create threads and detach them
     */
@@ -255,7 +270,7 @@ int main (int argc, char *argv[])
     pthread_attr_t thread_attr;
 	struct sched_param thread_param;
 
-	pthread_t readSensorID, StartStopStreamID, updateFlagsID, StartStopMotorID;
+	pthread_t readSensorID, StartStopStreamID, updateDatabaseID, StartStopMotorID;
 
 	pthread_attr_init (&thread_attr);
 	pthread_attr_getschedpolicy (&thread_attr, &thread_policy);
@@ -276,12 +291,12 @@ int main (int argc, char *argv[])
     anyError = pthread_create (&StartStopMotorID, &thread_attr, tStartStopMotor, NULL);
     checkErrors(anyError);
 
-    initThread(updateflagsPrio,&thread_attr,&thread_param);
+    initThread(updateDatabasePrio,&thread_attr,&thread_param);
 	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
-    anyError = pthread_create (&updateFlagsID, &thread_attr, tUpdateFlags, NULL);
+    anyError = pthread_create (&updateDatabaseID, &thread_attr, tUpdateDatabase, NULL);
     checkErrors(anyError);
 
-	pthread_detach (updateFlagsID);
+	pthread_detach (updateDatabaseID);
 	pthread_detach(StartStopStreamID);
     pthread_detach (StartStopMotorID);
     pthread_detach (readSensorID);

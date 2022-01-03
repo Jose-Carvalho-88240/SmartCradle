@@ -8,7 +8,6 @@ DDRIVERDIR := driver_dht
 MAIN_DEPS := $(INCDIR)/motor.h \
 	$(INCDIR)/dht.h \
 	$(INCDIR)/livestream.h \
-	$(INCDIR)/microphone.h \
 	$(INCDIR)/utils.h \
 	$(INCDIR)/database.h
 
@@ -17,7 +16,6 @@ DAEMON_DEPS := $(INCDIR)/microphone.h
 OBJS_MAIN := $(SOURCEDIR)/motor.c \
 	$(SOURCEDIR)/dht.c \
 	$(SOURCEDIR)/livestream.c \
-	$(SOURCEDIR)/microphone.c \
 	$(SOURCEDIR)/utils.c \
 	$(SOURCEDIR)/database.c
 
