@@ -16,7 +16,7 @@ def send_temp_hum(a,b):
     "humidity": float("{:.2f}".format(b)),
     "temperature": float("{:.2f}".format(a))
   }
-  db.child("users").child("0").child("parameters").update(data)
+  db.child("users").child("1XdXWXC26aNQ5TrEIX1z2p5ipiH2").child("parameters").update(data)
 
   return 1
 
@@ -33,7 +33,7 @@ def get_swing_flag():
 
   firebase = pyrebase.initialize_app(config)
   db = firebase.database()
-  ret = db.child("users").child("0").child("parameters").get()
+  ret = db.child("users").child("1XdXWXC26aNQ5TrEIX1z2p5ipiH2").child("parameters").get()
 
   x = int(ret.val()["swing_flag"])
 
@@ -54,7 +54,7 @@ def get_live_flag():
 
   firebase = pyrebase.initialize_app(config)
   db = firebase.database()
-  ret = db.child("users").child("0").child("parameters").get()
+  ret = db.child("users").child("1XdXWXC26aNQ5TrEIX1z2p5ipiH2").child("parameters").get()
 
   x = int(ret.val()["live_flag"])
 
@@ -80,7 +80,28 @@ def send_notification_flag(b):
   data = {
     "notification_flag": int(b) 
   }
-  db.child("users").child("0").child("parameters").update(data)
+  db.child("users").child("1XdXWXC26aNQ5TrEIX1z2p5ipiH2").child("parameters").update(data)
+
+  return 1
+
+def send_swing_flag(b):
+  import pyrebase
+
+  config = {
+  "apiKey": "3bkkqHY9qniMHWG5w9Ck3yhrAJUh5Q4bUp3H9JA6",
+  "authDomain": "projeto-gamma.firebaseapp.com",
+  "databaseURL": "https://projeto-gamma.firebaseio.com",
+  "storageBucket": "projeto-gamma.appspot.com"
+  }
+
+  firebase = pyrebase.initialize_app(config)
+  db = firebase.database()
+
+
+  data = {
+    "swing_flag": int(b) 
+  }
+  db.child("users").child("1XdXWXC26aNQ5TrEIX1z2p5ipiH2").child("parameters").update(data)
 
   return 1
 
