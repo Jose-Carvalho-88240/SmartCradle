@@ -20,48 +20,50 @@ void remMotor(){
 }
 
 int startMotor(){
-    int fd0 = open("/dev/motordriver0", O_WRONLY);   
-    if(fd0 == -1)
-    {
-        printf("Failed to open motor driver device driver.\n");
-        return 0;
-    }
 
-    motorRunning = 1;
-
-    if(write(fd0, &RUN, 1) <= 0)
+    if(!motorRunning)
     {
-        printf("Failed to write on device driver.\n");
-        motorRunning=0;
+        int fd0 = open("/dev/motordriver0", O_WRONLY);   
+        if(fd0 == -1)
+        {
+            printf("Failed to open motor driver device driver.\n");
+            return 0;
+        }
+
+        if(write(fd0, &RUN, 1) <= 0)
+        {
+            printf("Failed to write on device driver.\n");
+            close(fd0);
+            return 0;
+        }
+
+        motorRunning = 1;
         close(fd0);
-        return 0;
     }
-    
-    close(fd0);
-
     return 1;
 }
 
 int stopMotor(){
-    int fd0 = open("/dev/motordriver0", O_WRONLY);   
-    if(fd0 == -1)
-    {
-        printf("Failed to open motor driver device driver.\n");
-        return 0;
-    }
 
-    motorRunning = 0;
-
-    if(write(fd0, &STOP, 1) <= 0)
+    if(motorRunning)
     {
-        printf("Failed to write on device driver.\n");
-        motorRunning=1;
+        int fd0 = open("/dev/motordriver0", O_WRONLY);   
+        if(fd0 == -1)
+        {
+            printf("Failed to open motor driver device driver.\n");
+            return 0;
+        }   
+
+        if(write(fd0, &STOP, 1) <= 0)
+        {
+            printf("Failed to write on device driver.\n");
+            close(fd0);
+            return 0;
+        }
+
+        motorRunning = 0;
         close(fd0);
-        return 0;
     }
-
-    close(fd0);
-
     return 1;
 }
 
