@@ -2,7 +2,8 @@
     "files.associations": {
         "typeinfo": "c",
         "dht.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "cstdlib": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

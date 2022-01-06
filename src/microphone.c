@@ -1,17 +1,24 @@
 #include "../inc/microphone.h"
 #include <sndfile.h>
+#include <sys/syslog.h>
+#include <sys/wait.h>
 
-#define THRESHOLD -15
+#define THRESHOLD -40  // Audio threshold [dB]
 #define LIMIT 3
 
-
-void startRecording()
+int startRecording()
 {
-    system("ffmpeg \
-    -f alsa -ac 1 -ar 44100 -i plughw:1,0 \
+    int ret = 0;
+
+    ret = system("ffmpeg \
+    -f alsa -ac 1 -ar 44100 -i plughw:0,0 \
     -c:a copy \
     -t 2 -y \
-    audiorecord.wav");
+    /etc/audiorecord.wav");
+
+    //return value from the command on the upper 8-bits of the return value
+    // 0 on sucess, 1 on failure
+    return WEXITSTATUS(ret); 
 }
 
 /**
@@ -30,18 +37,17 @@ static float calculateLoudness()
     float sum=0;
     int i;
 
-    inFileName = "audiorecord.wav";
+    inFileName = "/etc/audiorecord.wav";
 
     inFile = sf_open(inFileName, SFM_READ, &inFileInfo);
+    if(inFile == NULL)
+        return ERR_OPEN;
 
     int samples =  inFileInfo.frames*inFileInfo.channels;
     float buffer[samples];
 
     if(sf_read_float(inFile,buffer,samples) != samples)
-    {
-        fprintf(stderr, "Error when processing microphone samples.\n");
-        return -1;
-    }
+        return ERR_READ;
     
     sf_close(inFile);
 
@@ -54,23 +60,28 @@ static float calculateLoudness()
     return 10*log10(ms);
 }
 
-_Bool processAudio()
+int processAudio(float *f)
 {
-    _Bool ret = 0;
+    int ret = 0;
     static u_int8_t crying_counter = 0;
+    float loudness;
+    
+    loudness = calculateLoudness();
+    if(loudness == ERR_OPEN || loudness == ERR_READ)
+        return loudness;
 
-    if(calculateLoudness() > THRESHOLD)
+    *f = loudness;
+    
+    if(loudness > (float)THRESHOLD)
     {
-        if(crying_counter++ >= LIMIT)
+        if(++crying_counter >= LIMIT)
         {
             crying_counter = 0;
             ret = 1;
         }
-            
         return ret;
     }
-
     crying_counter = 0;
-    return ret;
+    return 0;
 }
 

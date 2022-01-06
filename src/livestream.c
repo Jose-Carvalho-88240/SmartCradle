@@ -1,32 +1,51 @@
 #include "../inc/livestream.h"
 #include <stdlib.h>
+#include <sys/wait.h>
 
-static _Bool streamRunning; /* Status of the stream */
+static _Bool streamRunning = -1; /* Status of the stream */
 
-void initStream()
+void initServer()
 {
-    system("nginx");
+    if(streamRunning == -1)
+        system("nginx");
     streamRunning = 0;
 }
 
-void startLivestream()
+void endServer()
 {
-    streamRunning = 1;
-    system("ffmpeg -re \
-    -f alsa -ac 1 -thread_queue_size 2048 -ar 44100 -i plughw:1,0 \
+    if(streamRunning >=0)
+        system("nginx -s stop");
+    streamRunning = -1;
+}
+
+int startLivestream()
+{
+    int ret = 0;
+    
+    ret = system("ffmpeg -re \
+    -f alsa -ac 1 -thread_queue_size 1024 -ar 44100 -i plughw:0,0 \
     -f v4l2 -video_size 320x240 -thread_queue_size 16384 -i /dev/video0 \
     -c:a copy -c:v h264 -b:v 2048k -preset ultrafast -filter:v fps=fps=30 -tune zerolatency \
     -f flv rtmp:localhost/live/bbb \
     -nostdin -nostats > /var/log/ffmpeg_output.log 2>&1 < /dev/null &");
+
+    streamRunning = 1;
+
+    //return value from the command on the upper 8-bits of the return value
+    // 0 on sucess, 1 on failure
+    return WEXITSTATUS(ret); 
 }
 
 void stopLivestream()
 {
+    if(streamRunning > 0)
+        system("pidof ffmpeg | xargs kill -9");
     streamRunning = 0;
-    system("pidof ffmpeg | xargs kill -9");
 }
 
 _Bool getStreamStatus()
 {
+    if(streamRunning == -1)
+        return 0;
     return streamRunning;
 }

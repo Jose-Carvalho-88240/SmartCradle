@@ -7,6 +7,11 @@
 void initMotor();
 
 /**
+ * @brief Remove the motor driver device driver
+ */
+void remMotor();
+
+/**
  * @brief Start the motor
  * 
  * Writes to the device driver so that the motor
@@ -17,7 +22,7 @@ void initMotor();
 int startMotor();
 
 /**
- * @brief Start the motor
+ * @brief Stop the motor
  * 
  * Writes to the device driver so that the motor
  * is disabled.

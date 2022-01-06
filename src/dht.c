@@ -9,8 +9,12 @@ void initDHT11(void){
     system("insmod dht11.ko");
 }
 
+void remDHT11(void){
+    system("rmmod dht11");
+}
+
 int readDHT11(dht11_t *data){
-    int fd0 = open("/dev/dht110", O_WRONLY);  
+    int fd0 = open("/dev/dht110", O_RDWR);  
     
     if(fd0 == -1)
     {
@@ -18,7 +22,7 @@ int readDHT11(dht11_t *data){
         return 0;
     }
 
-    if(read(fd0,&data->CompleteSample, strlen(data->CompleteSample)) == 0)
+    if(read(fd0,data, sizeof(*data)) <= 0)
     {
         printf("Failed to read from device driver.\n");
         close(fd0);
@@ -26,12 +30,6 @@ int readDHT11(dht11_t *data){
     }
     
     close(fd0);
-
-    data->TemperatureI=data->CompleteSample[0];
-    data->TemperatureD=data->CompleteSample[1];
-    data->HumidityI=data->CompleteSample[2];
-    data->HumidityD=data->CompleteSample[3];
-    data->checksum=data->CompleteSample[4];
 
     printf("Temperature: %d.%dºC\nHumidity: %d.%d\nChecksum: %d\n",data->TemperatureI,
     data->TemperatureD,data->HumidityI,data->HumidityD,data->checksum);

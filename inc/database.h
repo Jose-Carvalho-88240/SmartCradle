@@ -5,7 +5,7 @@
 
 #define ERROR 7
 
-void initDatabase();
+int initDatabase();
 
 int send_temp_hum( float temp, float hum);
 

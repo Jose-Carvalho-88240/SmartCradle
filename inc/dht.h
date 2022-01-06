@@ -34,6 +34,12 @@ typedef struct DHT11
 void initDHT11(void);
 
 /**
+ * @brief Removes the sensor device driver
+ * 
+ */
+void remDHT11(void);
+
+/**
  * @brief Sample from the sensor
  * 
  * Reads from the device driver all of the

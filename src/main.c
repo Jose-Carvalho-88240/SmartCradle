@@ -7,10 +7,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <mqueue.h> 
+#include <sys/mman.h>
+#include <sys/shm.h>
 #include <sys/stat.h>
 #include <linux/types.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <string.h>
 #include "../inc/database.h"
 #include "../inc/wifi.h"
 #include "../inc/microphone.h"
@@ -19,7 +22,8 @@
 #include "../inc/dht.h"
 
 #define MSGQOBJ_NAME    "/mqLocalDaemon"
-#define MAX_MSG_LEN     15
+#define SHMEMOBJ_NAME "/shLocalDaemon"
+#define MAX_MSG_LEN     128
 
 /* priorites of each thread */
 #define streamPrio 2
@@ -28,6 +32,7 @@
 #define sensorPrio 4
 
 #define motorTimeout 10 /* Minutes */
+#define sensorSample 10 /* Minutes */
 
 _Bool motorFlag = 0;
 _Bool streamFlag = 0;
@@ -39,6 +44,11 @@ pthread_mutex_t sensorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable
 
 float databaseTemperature = 0;
 float databaseHumidity = 0;
+
+pid_t daemonPID;
+
+mqd_t msgq_id;
+struct mq_attr msgq_attr;
 
 static void signalHandler(int signo) 
 {
@@ -56,6 +66,21 @@ static void signalHandler(int signo)
             send_notification_flag(1);
             printf("Notification flag was updated in the database.\n");
 		break;
+
+        case (SIGINT):
+            printf("Terminating program...\n");
+            mq_unlink(MSGQOBJ_NAME); //unlink msg q
+            stopMotor(); //stop motor
+            stopLivestream(); //stop livestream
+            endServer(); //close server
+            remMotor(); //remove motor device driver
+            remDHT11(); //remove sensor device driver
+            const char cmd[30];
+            sprintf(cmd, "kill -TERM %d", daemonPID); 
+            system(cmd); //kill Daemon
+            Py_FinalizeEx(); //close python interpreter
+            exit(1);
+        break;
 	}
 }
 
@@ -72,7 +97,7 @@ void *tReadSensor(void *arg)
         if(readDHT11(&sensorSampling))
         {
             samplingTries = 0;
-             printf("Sensor sampling successful.\n");
+             printf("Sensor sampling successful:\n");
         }
         else
         {
@@ -85,7 +110,8 @@ void *tReadSensor(void *arg)
         {
             temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;
             humidity = sensorSampling.HumidityI + (float)(sensorSampling.HumidityD)/100;
-            printf("Temperature: %.2f | Humidity: %.2f\n", temperature, humidity);
+
+            printf("\tTemperature: %.2f\ºC \n \tHumidity: %.2f\%\n", temperature, humidity);
             if( (temperature != databaseTemperature) || (humidity != databaseHumidity) )
             {
                 pthread_mutex_lock(&sensorFlag_mutex);
@@ -102,9 +128,9 @@ void *tReadSensor(void *arg)
             perror("tReadSensor()");     
         }
 
-        /* Pause for motorTimeout minutes */
-        sleep(60 * motorTimeout); 
-    }
+        /* Pause for sensorSample minutes */
+        sleep(60 * sensorSample); 
+    }   
 
 }
 
@@ -114,8 +140,10 @@ void *tStartStopStream (void *arg)
     {
         if(streamFlag && !getStreamStatus())
         {
-            startLivestream();
-            printf("Livestream has started.\n");
+            if(startLivestream())
+                fprintf(stderr, "Error when starting stream.\n");
+            else
+                printf("Livestream has started.\n");
         }
         else if(!streamFlag && getStreamStatus())
         {
@@ -131,31 +159,37 @@ void *tStartStopMotor (void *arg)
     {   
         if(motorFlag && !getMotorStatus())
         {
-            startMotor();
+            if(startMotor())
+            {           
+                struct itimerval itv;
+                itv.it_interval.tv_sec = 60 * motorTimeout;
+                itv.it_interval.tv_usec = 0;
+                itv.it_value.tv_sec = 60 * motorTimeout;
+                itv.it_value.tv_usec = 0;
+                setitimer (ITIMER_REAL, &itv, NULL);
 
-            struct itimerval itv;
-            itv.it_interval.tv_sec = 60 * motorTimeout;
-            itv.it_interval.tv_usec = 0;
-            itv.it_value.tv_sec = 60 * motorTimeout;
-            itv.it_value.tv_usec = 0;
-            setitimer (ITIMER_REAL, &itv, NULL);
-
-            printf("Motor has started.\n");
+                printf("Motor has started.\n");
+            }
+            else
+                fprintf(stderr, "Error when starting motor.\n");
         }
         else if(!motorFlag && getMotorStatus())
         {
-            stopMotor();
-            printf("Motor has stopped.\n");
+            if(stopMotor())
+                printf("Motor has stopped.\n");
+            else
+                fprintf(stderr, "Error when stopping motor.\n");
         }
     }
 }
 
 void *tUpdateDatabase(void *arg)
 {
+    unsigned int ret;
     _Bool dMotorFlag, dStreamFlag;
-    mqd_t msgq_id;
     Py_Initialize();
     initDatabase();
+
     while(1)
     {
         /*  
@@ -166,7 +200,7 @@ void *tUpdateDatabase(void *arg)
         {
                 pthread_mutex_lock(&sensorFlag_mutex);
                 sensorFlag = 0;
-                send_temp_hum(previousTemperature,previousHumidity);
+                send_temp_hum(databaseTemperature,databaseHumidity);
                 pthread_mutex_unlock(&sensorFlag_mutex);
                 printf("Temperature and Humidity were updated in the database.\n");
         }
@@ -190,13 +224,28 @@ void *tUpdateDatabase(void *arg)
         pthread_mutex_lock(&streamFlag_mutex);
         if(streamFlag != dStreamFlag)
         {
-            msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG, NULL);
-            if (msgq_id == (mqd_t)-1) {
-                perror("In mq_open()");
-                exit(1);
+            printf("Sending livestream flag update to daemon...\n");
+            char *msg;
+            msg = malloc(4);
+            if(msg == NULL)
+            {
+                free(msg);
+                fprintf(stderr,"malloc() got error.\n");
+                break;
             }
-            mq_send(msgq_id, (int)dStreamFlag, 1, 1);
-            mq_close(msgq_id);
+
+            if(dStreamFlag)
+                strcpy(msg,"LV-1");
+            else
+                strcpy(msg,"LV-0");
+            ret = mq_send(msgq_id, msg, strlen(msg)+1, 1);
+            if(ret != 0)
+            {
+                fprintf(stderr,"mq_send() got error %d\n",ret);
+                errno=ret;
+                perror("mq_send()");
+            }
+            free(msg);
         }
         streamFlag = dStreamFlag;
         pthread_mutex_unlock(&streamFlag_mutex);
@@ -204,6 +253,7 @@ void *tUpdateDatabase(void *arg)
         /* Pause for 5 seconds */
         sleep(5); 
     }
+    mq_close(msgq_id);
     Py_FinalizeEx(); // for redundancy purposes
 }
 
@@ -212,19 +262,33 @@ void checkErrors(int status);
 
 int main (int argc, char *argv[])
 {
-    /*
-    *   Open message queue to drop PID for Daemon
-    */
-    mqd_t msgq_id;
-    pid_t my_pid = getpid();
-    
-    msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG, NULL);
+    msgq_attr.mq_flags = 0;  
+    msgq_attr.mq_maxmsg = 1;  
+    msgq_attr.mq_msgsize = 5;  
+    msgq_attr.mq_curmsgs = 0; 
+    msgq_id = mq_open(MSGQOBJ_NAME, O_WRONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU | S_IRWXG | S_IRWXO, &msgq_attr);
+    if(msgq_id == EEXIST)
+    {
+        mq_unlink(MSGQOBJ_NAME);
+        msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG | S_IRWXO, NULL);
+    }
     if (msgq_id == (mqd_t)-1) {
         perror("In mq_open()");
         exit(1);
     }
-    mq_send(msgq_id, my_pid, 1, 1);
-    mq_close(msgq_id);
+  
+    pid_t my_pid = getpid();
+    printf("PID: %d\n",my_pid);
+    /*
+    *   Open shared memory to drop PID for Daemon
+    *   and read Daemon's PID
+    */
+    int fd;
+    fd = shm_open(SHMEMOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, 0666);
+    ftruncate(fd, sizeof(pid_t));
+    void* ptr;
+    ptr = mmap(0, sizeof(pid_t),PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0);
+    sprintf(ptr, "%d", my_pid);
 
     /*
     *   Set Python Path to current Working Path
@@ -235,15 +299,24 @@ int main (int argc, char *argv[])
     *   Call the Daemon
     */
     system("./daemon.elf");
-    
+
+    /*
+    *   Read Daemon's PID
+    */
+    daemonPID = atoi((char*)ptr);
+    munmap(0, sizeof(pid_t));
+    shm_unlink(SHMEMOBJ_NAME);
+
     /*
     *   Define the signal handler
     *       @ SIGALRM for the motor timeout
     *       @ SIGUSR for the notification generation request
     *       from the Daemon
+    *       @ SIGINT to kill the program upon receiving CTRL + C
     */
     signal(SIGALRM, signalHandler);
     signal(SIGUSR1, signalHandler);
+    signal(SIGINT, signalHandler);
 
     /*
     *   Call the initialization functions for the modules
@@ -251,7 +324,7 @@ int main (int argc, char *argv[])
     *       @ DHT11 Sensor
     *       @ Motor Driver
     */
-    initStream();
+    initServer();
     initDHT11();
     initMotor();
 
@@ -266,37 +339,31 @@ int main (int argc, char *argv[])
     *   Create threads and detach them
     */
     int anyError=0;
-   	int thread_policy;
     pthread_attr_t thread_attr;
 	struct sched_param thread_param;
 
 	pthread_t readSensorID, StartStopStreamID, updateDatabaseID, StartStopMotorID;
 
 	pthread_attr_init (&thread_attr);
-	pthread_attr_getschedpolicy (&thread_attr, &thread_policy);
 	pthread_attr_getschedparam (&thread_attr, &thread_param);
 
 	initThread(sensorPrio,&thread_attr,&thread_param);
-	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
 	anyError = pthread_create (&readSensorID, &thread_attr, tReadSensor, NULL);
     checkErrors(anyError);
 
 	initThread(streamPrio,&thread_attr,&thread_param);
-	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
     anyError = pthread_create (&StartStopStreamID, &thread_attr, tStartStopStream, NULL);
     checkErrors(anyError);
 
     initThread(motorPrio,&thread_attr,&thread_param);
-	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
     anyError = pthread_create (&StartStopMotorID, &thread_attr, tStartStopMotor, NULL);
     checkErrors(anyError);
 
     initThread(updateDatabasePrio,&thread_attr,&thread_param);
-	pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
     anyError = pthread_create (&updateDatabaseID, &thread_attr, tUpdateDatabase, NULL);
     checkErrors(anyError);
-
-	pthread_detach (updateDatabaseID);
+	
+    pthread_detach (updateDatabaseID);
 	pthread_detach(StartStopStreamID);
     pthread_detach (StartStopMotorID);
     pthread_detach (readSensorID);
@@ -308,7 +375,6 @@ void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *
 {
 	int min, max;
 
-	pthread_attr_setschedpolicy (pthread_attr, SCHED_RR);
 	min = sched_get_priority_min (SCHED_RR);
 	max = sched_get_priority_max (SCHED_RR);
 
@@ -318,6 +384,10 @@ void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *
         perror("initThread()");
         exit(1);
     }
+
+    pthread_param->sched_priority = priority;
+
+    pthread_attr_setschedparam(&pthread_attr, &pthread_param);
 }
 
 void checkErrors(int status)

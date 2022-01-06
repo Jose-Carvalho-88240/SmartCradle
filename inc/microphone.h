@@ -1,13 +1,26 @@
 #ifndef MICROPHONE_H
 #define MICROPHONE_H
 
+#define ERR_OPEN 12
+#define ERR_READ 15
+
 /**
- * @brief Recording of an audio sample
+ * @brief Records a 2 second .wav audio from microphone
  * 
- * A 2 second .wav audio sample from the
- * microphone is captured and stored
+ * Recording is possible by using FFmpeg. The parameters used are:
+ *      @ -f alsa : force audio input device to be of ALSA
+ *      @ -ac 1  : set audio channel to 1
+ *      @ -ar 44100 : set audio sampling rate to 44100 Hz
+ *      @ -i plughw:0,0 : select the audio card referencing the microphone
+ *      @ -c:a copy : set audio codec to copy (copies the frames directly
+ *      instead of decoding/filtering/encoding)
+ *      @ -t 2 : recording duration
+ *      @ -y : overwrite output files
+ *      @ audiorecord.wav
+ * 
+ * @return int 
  */
-void startRecording();
+int startRecording();
 
 /**
  * @brief Processes the audio to check whether the baby is crying
@@ -17,8 +30,8 @@ void startRecording();
  * incremented. At 3 consecutive samples that have breached the 
  * threshold, it is considered that the baby is crying.
  * 
- * @return bool  
+ * @return int
  */
-_Bool processAudio();
+int processAudio(float *f);
 
 #endif

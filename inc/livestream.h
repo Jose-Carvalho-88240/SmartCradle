@@ -4,12 +4,20 @@
 /**
  * @brief Start the server
  */
-void initStream();
+void initServer();
+
+/**
+ * @brief Close the server
+ * 
+ */
+void endServer();
 
 /**
  * @brief Start the livestream
+ * 
+ * @return int : 0 on success, 1 on error
  */
-void startLivestream();
+int startLivestream();
 
 /**
  * @brief Stop the server

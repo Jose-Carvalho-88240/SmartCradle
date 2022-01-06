@@ -40,15 +40,18 @@ ssize_t motordriver_device_write(struct file *pfile, const char __user *pbuff, s
 		return -EFAULT;
 
 	pdev = (struct GpioRegisters *)pfile->private_data;
+	pr_alert("%s: Char received %c\n",__FUNCTION__, pbuff[0]);
 	if (pbuff[0]=='0')
 	{
-		SetGPIOValue(pdev, IN3, 1);
-		SetGPIOValue(pdev, IN4, 1);
+		pr_alert("%s: Motor is stopping...\n",__FUNCTION__);
+		SetGPIOValue(pdev, IN3, HIGH);
+		SetGPIOValue(pdev, IN4, HIGH);
 	}
 	else
 	{
-		SetGPIOValue(pdev, IN3, 1);
-		SetGPIOValue(pdev, IN4, 0);
+		pr_alert("%s: Motor is running...\n",__FUNCTION__);
+		SetGPIOValue(pdev, IN3, HIGH);
+		SetGPIOValue(pdev, IN4, LOW);
 	}	
 	return len;
 }
@@ -115,8 +118,8 @@ static int __init motordriverModule_init(void) {
 
 	pr_alert("map to virtual adresse: 0x%x\n", (unsigned)s_pGpioRegisters);
 	
-	SetGPIOFunction(s_pGpioRegisters, IN3, 0b001); //Output
-	SetGPIOFunction(s_pGpioRegisters, IN4, 0b001); //Output
+	SetGPIOFunction(s_pGpioRegisters, IN3, OUTPUT); //Output
+	SetGPIOFunction(s_pGpioRegisters, IN4, OUTPUT); //Output
 
 	return 0;
 }
@@ -125,8 +128,8 @@ static void __exit motordriverModule_exit(void) {
 	
 	pr_alert("%s: called\n",__FUNCTION__);
 	
-	SetGPIOFunction(s_pGpioRegisters, IN4, 0); //Input
-	SetGPIOFunction(s_pGpioRegisters, IN3, 0); //Input
+	SetGPIOFunction(s_pGpioRegisters, IN4, INPUT); //Input
+	SetGPIOFunction(s_pGpioRegisters, IN3, INPUT); //Input
 
 	iounmap(s_pGpioRegisters);
 	cdev_del(&c_dev);
