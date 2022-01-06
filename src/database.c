@@ -3,7 +3,7 @@
 //includes move to HEADER file
 
 PyObject *pName, *pModule, *pDict;
-PyObject *pFuncSend_notification_flag, *pFuncGet_live_flag, *pFuncGet_swing_flag, *pFuncSend_temp_hum, *pResult;
+PyObject *pFuncSend_notification_flag, *pFuncGet_live_flag, *pFuncGet_swing_flag, *pFuncSend_temp_hum, *pFuncSend_swing_flag,*pResult;
 
 
 int send_temp_hum( float temp, float hum)
@@ -14,6 +14,8 @@ int send_temp_hum( float temp, float hum)
 
     //Cleanup
     Py_XDECREF(pResult);
+
+    return 1;
 }
 
 int get_swing_flag()
@@ -72,6 +74,20 @@ int send_notification_flag( int notification_flag)
 
     //Cleanup
     Py_XDECREF(pResult);
+
+    return 1;
+}
+
+int send_swing_flag(int swing_flag)
+{
+    //Call the function with arguments -> i = one integer , "ii" = two integers , "d" -> double mkvalue-style format string
+    pResult = PyObject_CallFunction(pFuncSend_swing_flag, "i", swing_flag);
+    PyErr_Print();
+
+    //Cleanup
+    Py_XDECREF(pResult);
+
+    return 1;
 }
 
 int initDatabase()
@@ -124,5 +140,15 @@ int initDatabase()
     {
         PyErr_Print();
     }
+
+    pFuncSend_swing_flag = PyDict_GetItemString(pDict, (char*) "send_swing_flag");
+    
+    //Check if its callable
+    if (!PyCallable_Check(pFuncSend_swing_flag))
+    {
+        PyErr_Print();
+    }
+    
+    return 1;
 }
 
