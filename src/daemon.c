@@ -55,6 +55,7 @@ void *tDetectCrying(void *local_pid)
             {
                 syslog(LOG_INFO, "Recording ended.\n");  
                 ret = processAudio(&f);
+                syslog(LOG_INFO, "Audio process returned: %d | loudness : %.3f\n", ret, f);
                 if(!ret || ret == 1)
                 {
                     syslog(LOG_INFO, "Audio process returned: %d | loudness : %.3f\n", ret, f);
@@ -81,7 +82,7 @@ void *tDetectCrying(void *local_pid)
                 }
             }
             else
-                syslog(LOG_ERR, "Error calling when calling startRecording().\n");  
+                syslog(LOG_ERR, "Error when calling startRecording().\n");  
         }
         sleep(2);
     }

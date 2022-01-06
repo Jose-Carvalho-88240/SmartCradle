@@ -2,20 +2,17 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 
-static _Bool streamRunning = -1; /* Status of the stream */
+static _Bool streamRunning; /* Status of the stream */
 
 void initServer()
 {
-    if(streamRunning == -1)
-        system("nginx");
+    system("nginx");
     streamRunning = 0;
 }
 
 void endServer()
 {
-    if(streamRunning >=0)
-        system("nginx -s stop");
-    streamRunning = -1;
+    system("nginx -s stop");
 }
 
 int startLivestream()
@@ -38,14 +35,11 @@ int startLivestream()
 
 void stopLivestream()
 {
-    if(streamRunning > 0)
-        system("pidof ffmpeg | xargs kill -9");
+    system("pidof ffmpeg | xargs kill -9");
     streamRunning = 0;
 }
 
 _Bool getStreamStatus()
 {
-    if(streamRunning == -1)
-        return 0;
     return streamRunning;
 }

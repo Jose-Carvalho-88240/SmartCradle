@@ -3,7 +3,7 @@
 #include <sys/syslog.h>
 #include <sys/wait.h>
 
-#define THRESHOLD -40  // Audio threshold [dB]
+#define THRESHOLD -30  // Audio threshold [dB]
 #define LIMIT 3
 
 int startRecording()
@@ -67,12 +67,13 @@ int processAudio(float *f)
     float loudness;
     
     loudness = calculateLoudness();
+
     if(loudness == ERR_OPEN || loudness == ERR_READ)
         return loudness;
 
     *f = loudness;
     
-    if(loudness > (float)THRESHOLD)
+    if(loudness > THRESHOLD)
     {
         if(++crying_counter >= LIMIT)
         {

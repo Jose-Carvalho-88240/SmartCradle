@@ -40,7 +40,6 @@ ssize_t motordriver_device_write(struct file *pfile, const char __user *pbuff, s
 		return -EFAULT;
 
 	pdev = (struct GpioRegisters *)pfile->private_data;
-	pr_alert("%s: Char received %c\n",__FUNCTION__, pbuff[0]);
 	if (pbuff[0]=='0')
 	{
 		pr_alert("%s: Motor is stopping...\n",__FUNCTION__);

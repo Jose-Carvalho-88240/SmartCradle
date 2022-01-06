@@ -76,7 +76,7 @@ static void signalHandler(int signo)
             remMotor(); //remove motor device driver
             remDHT11(); //remove sensor device driver
             const char cmd[30];
-            sprintf(cmd, "kill -TERM %d", daemonPID); 
+            sprintf(cmd, "killall daemon.elf"); 
             system(cmd); //kill Daemon
             Py_FinalizeEx(); //close python interpreter
             exit(1);
@@ -111,7 +111,7 @@ void *tReadSensor(void *arg)
             temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;
             humidity = sensorSampling.HumidityI + (float)(sensorSampling.HumidityD)/100;
 
-            printf("\tTemperature: %.2f\ºC \n \tHumidity: %.2f\%\n", temperature, humidity);
+            printf("\tTemperature: %.2f \ºC \n \tHumidity: %.2f \%\n", temperature, humidity);
             if( (temperature != databaseTemperature) || (humidity != databaseHumidity) )
             {
                 pthread_mutex_lock(&sensorFlag_mutex);
@@ -155,13 +155,13 @@ void *tStartStopStream (void *arg)
 
 void *tStartStopMotor (void *arg)
 {
+    struct itimerval itv;
     while(1)
     {   
         if(motorFlag && !getMotorStatus())
         {
             if(startMotor())
             {           
-                struct itimerval itv;
                 itv.it_interval.tv_sec = 60 * motorTimeout;
                 itv.it_interval.tv_usec = 0;
                 itv.it_value.tv_sec = 60 * motorTimeout;
@@ -176,7 +176,15 @@ void *tStartStopMotor (void *arg)
         else if(!motorFlag && getMotorStatus())
         {
             if(stopMotor())
+            {
+                itv.it_interval.tv_sec = 0;
+                itv.it_interval.tv_usec = 0;
+                itv.it_value.tv_sec = 0;
+                itv.it_value.tv_usec = 0;
+                setitimer (ITIMER_REAL, &itv, NULL);
+
                 printf("Motor has stopped.\n");
+            }
             else
                 fprintf(stderr, "Error when stopping motor.\n");
         }

@@ -8,18 +8,15 @@
 const char RUN = '1';
 const char STOP = '0';
 
-static _Bool motorRunning=-1; /* Status of the motor */
+static _Bool motorRunning; /* Status of the motor */
 
 void initMotor(){
-    if(motorRunning == -1)
-        system("insmod motordriver.ko");
+    system("insmod motordriver.ko");
     motorRunning = 0;
 }
 
 void remMotor(){
-    if(motorRunning != -1)
-        system("rmmod motordriver");
-    motorRunning = -1;
+    system("rmmod motordriver");
 }
 
 int startMotor(){
@@ -70,7 +67,5 @@ int stopMotor(){
 
 _Bool getMotorStatus()
 {
-    if(motorRunning == -1)
-        return 0;
     return motorRunning;
 }

@@ -31,8 +31,5 @@ int readDHT11(dht11_t *data){
     
     close(fd0);
 
-    printf("Temperature: %d.%dºC\nHumidity: %d.%d\nChecksum: %d\n",data->TemperatureI,
-    data->TemperatureD,data->HumidityI,data->HumidityD,data->checksum);
-    
     return 1;
 }
