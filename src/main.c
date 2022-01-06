@@ -57,7 +57,7 @@ static void signalHandler(int signo)
 	    case (SIGALRM):
             pthread_mutex_lock(&motorFlag_mutex);
             motorFlag = 0;
-            //Update motor flag in database
+            send_swing_flag(motorFlag);
             pthread_mutex_unlock(&motorFlag_mutex);
             printf("Motor flag was updated in the database.\n");
 		break;
