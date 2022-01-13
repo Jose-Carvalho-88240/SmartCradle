@@ -1,3 +1,12 @@
+##
+# @file database.py
+# @author José Carvalho, João Carneiro
+# @brief Database python module implementation
+# @date 2022-01-13
+# 
+# @copyright Copyright (c) 2022
+#
+
 def send_temp_hum(a,b):
   import pyrebase
 

@@ -1,3 +1,8 @@
+# documentation
+DOXYGEN = /usr/local/bin/doxygen
+DOXYFILE = Doxyfile
+DOCDIR = doc
+
 CFLAGS = -g -lm -pthread -lsndfile -lpython3.9 -lcrypt -ldl -lutil -lrt
 SOURCEDIR := src
 INCDIR := inc
@@ -31,7 +36,7 @@ CROSS_COMPILE ?= arm-buildroot-linux-gnueabihf-
 CC = $(CROSS_COMPILE)gcc
 export ARCH CROSS_COMPILE
 
-all: main daemon drivers
+all: main daemon drivers documentation
 
 main: $(OBJS_MAIN)
 	$(CC) $(SOURCEDIR)/main.c -o $@.elf $(OBJS_MAIN) $(CFLAGS) 
@@ -50,9 +55,12 @@ drivers:
 	rm $(DDRIVERDIR)/*.o
 	mv dht11.ko $(BINDIR)
 
+documentation:
+	$(DOXYGEN) $(DOXYFILE)
+
 %.o: %.c $(MAIN_DEPS) $(DAEMON_DEPS)
 	$(CROSS_COMPILE) -c -o $@ $< $(CFLAGS)
 
 # remove all built files
 clean:
-	rm -f -r $(BINDIR)/*
+	rm -f -r $(BINDIR)/* $(DOCDIR)/*

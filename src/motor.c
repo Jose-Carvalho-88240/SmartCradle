@@ -1,3 +1,12 @@
+/**
+ * @file motor.c
+ * @author José Carvalho, João Carneiro
+ * @brief Motor module implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include "../inc/motor.h"
 #include <stdio.h>
 #include <stdlib.h>

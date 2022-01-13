@@ -1,3 +1,12 @@
+/**
+ * @file main.c
+ * @author José Carvalho, João Carneiro
+ * @brief Main process implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,33 +29,33 @@
 #include "../inc/motor.h"
 #include "../inc/dht.h"
 
-#define MSGQOBJ_NAME    "/mqLocalDaemon" /* Message queue name */
-#define SHMEMOBJ_NAME "/shLocalDaemon" /* Shared memory name */
+#define MSGQOBJ_NAME    "/mqLocalDaemon" /**< Message queue name */
+#define SHMEMOBJ_NAME "/shLocalDaemon" /**<Shared memory name */
 #define MAX_MSG_LEN     128
 
-#define streamPrio 2 /* tStartStopStream priority */
-#define motorPrio 2 /* tStartStopMotor priority */
-#define updateDatabasePrio 3 /* tUpdateDatabase priority */
-#define sensorPrio 4 /* tReadSensor priority */
+#define streamPrio 2 /**<tStartStopStream priority */
+#define motorPrio 2 /**<tStartStopMotor priority */
+#define updateDatabasePrio 3 /**<tUpdateDatabase priority */
+#define sensorPrio 4 /**<tReadSensor priority */
 
-#define motorTimeout 10 /* Motor timeout in minutes */
-#define sensorSample 10 /* Sensor sampling time in minutes */
+#define motorTimeout 10 /**<Motor timeout in minutes */
+#define sensorSample 10 /**<Sensor sampling time in minutes */
 
-_Bool motorFlag = 0; /* Motor/Swing flag */
-_Bool streamFlag = 0; /* Livestream flag */
-_Bool sensorFlag = 0; /* Sensor sample successful flag */
+_Bool motorFlag = 0; /**<Motor/Swing flag */
+_Bool streamFlag = 0; /**<Livestream flag */
+_Bool sensorFlag = 0; /**<Sensor sample successful flag */
 
-pthread_mutex_t motorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (motorFlag) */
-pthread_mutex_t streamFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (streamFlag) */
-pthread_mutex_t sensorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (sensorFlag) */
+pthread_mutex_t motorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /**<shared variable (motorFlag) */
+pthread_mutex_t streamFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /**<shared variable (streamFlag) */
+pthread_mutex_t sensorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /**<shared variable (sensorFlag) */
 
-float databaseTemperature = 0; /* Temperature to send to database */
-float databaseHumidity = 0; /* Humidity to send to database */
+float databaseTemperature = 0; /**<Temperature to send to database */
+float databaseHumidity = 0; /**<Humidity to send to database */
 
-pid_t daemonPID; /* Daemon PID */
+pid_t daemonPID; /**<Daemon PID */
 
-mqd_t msgq_id; /* Message queue ID */
-struct mq_attr msgq_attr; /* Message queue attributes */
+mqd_t msgq_id; /**<Message queue ID */
+struct mq_attr msgq_attr; /**<Message queue attributes */
 
 
 /**

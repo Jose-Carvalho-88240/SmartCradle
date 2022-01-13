@@ -1,3 +1,13 @@
+/**
+ * @file motor.h
+ * @author José Carvalho, João Carneiro
+ * @brief Motor module header
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
+
 #ifndef MOTOR_H
 #define MOTOR_H
 

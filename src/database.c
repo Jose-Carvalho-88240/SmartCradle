@@ -1,6 +1,13 @@
-#include "../inc/database.h"
+/**
+ * @file database.c
+ * @author José Carvalho, João Carneiro
+ * @brief Database C module implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
 
-//includes move to HEADER file
+#include "../inc/database.h"
 
 PyObject *pName, *pModule, *pDict;
 PyObject *pFuncSend_notification_flag, *pFuncGet_live_flag, *pFuncGet_swing_flag, *pFuncSend_temp_hum, *pFuncSend_swing_flag,*pResult;

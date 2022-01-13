@@ -1,3 +1,12 @@
+/**
+ * @file daemon.c
+ * @author José Carvalho, João Carneiro
+ * @brief Daemon implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include <sys/syslog.h>
 #include <stdio.h>
 #include <sys/socket.h>

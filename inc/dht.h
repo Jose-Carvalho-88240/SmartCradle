@@ -1,21 +1,30 @@
+/**
+ * @file dht.h
+ * @author José Carvalho, João Carneiro
+ * @brief Temperature and Humidity sensor module header
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #ifndef DHT_H
 #define DHT_H
 
 /**
  * @brief DHT11 Data structure
- * 		@ CompleteSample: receives all the
+ *		CompleteSample: receives all the
  * 		data from the sensor
  *
- * 		@ TemperatureI: Integer part of
+ *		TemperatureI: Integer part of
  *		the temperature
  * 		
- *		@ TemperatureD: Decimal part of
+ *		TemperatureD: Decimal part of
  *		the temperature
  *
- * 		@ HumidityI: Integer part of
+ *		HumidityI: Integer part of
  *		the humidity
  * 		
- *		@ HumidityD: Decimal part of
+ *		HumidityD: Decimal part of
  *		the humidity
  */
 typedef struct DHT11

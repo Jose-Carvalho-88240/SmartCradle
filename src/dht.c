@@ -1,3 +1,12 @@
+/**
+ * @file database.c
+ * @author José Carvalho, João Carneiro
+ * @brief Temperature and humidity sensor module implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

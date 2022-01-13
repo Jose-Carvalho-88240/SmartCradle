@@ -1,3 +1,12 @@
+/**
+ * @file utils.c
+ * @author José Carvalho, João Carneiro
+ * @brief Utilities module implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include "../inc/utils.h"
 #include <linux/module.h>
 #include <linux/types.h>

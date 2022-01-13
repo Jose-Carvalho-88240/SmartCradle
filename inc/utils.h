@@ -1,3 +1,12 @@
+/**
+ * @file utils.h
+ * @author José Carvalho, João Carneiro
+ * @brief Utilities module header
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -22,12 +31,11 @@
 /**
  * @brief Structure that contains GPIO Registers
  * 
- * 		@ GPFSEL : Set pin function
- * 		@ GPSET : Set pin HIGH
- * 		@ GPCLR : Set pin LOW
- * 		@ GPLEV : Pin value
- * 		@ GPIO_PUP_PDN_CNTRL_REG : Set pin pull
- * 
+ *		GPFSEL : Set pin function
+ *		GPSET : Set pin HIGH
+ *		GPCLR : Set pin LOW
+ *		GPLEV : Pin value
+ *		GPIO_PUP_PDN_CNTRL_REG : Set pin pull
  */
 struct GpioRegisters
 {

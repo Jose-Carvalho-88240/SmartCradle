@@ -1,3 +1,12 @@
+/**
+ * @file livestream.c
+ * @author José Carvalho, João Carneiro
+ * @brief Livestream module implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include "../inc/livestream.h"
 #include <stdlib.h>
 #include <sys/wait.h>

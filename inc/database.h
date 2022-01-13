@@ -1,3 +1,13 @@
+/**
+ * @file database.h
+ * @author José Carvalho, João Carneiro
+ * @brief Database module header
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
+
 #ifndef DATABASE_H
 #define DATABASE_H
 

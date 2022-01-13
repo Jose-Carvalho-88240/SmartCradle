@@ -1,3 +1,12 @@
+/**
+ * @file microphone.c
+ * @author José Carvalho, João Carneiro
+ * @brief Microphone module implementation
+ * @date 2022-01-13
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include "../inc/microphone.h"
 #include <sndfile.h>
 #include <sys/syslog.h>
