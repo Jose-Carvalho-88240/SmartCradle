@@ -55,11 +55,6 @@ ssize_t motordriver_device_write(struct file *pfile, const char __user *pbuff, s
 	return len;
 }
 
-ssize_t motordriver_device_read(struct file *pfile, char __user *p_buff,size_t len, loff_t *poffset){
-	pr_alert("%s: called (%u)\n",__FUNCTION__,len);
-	return 0;
-}
-
 int motordriver_device_close(struct inode *p_inode, struct file * pfile){
 	
 	pr_alert("%s: called\n",__FUNCTION__);
@@ -78,7 +73,6 @@ int motordriver_device_open(struct inode* p_indode, struct file *p_file){
 static struct file_operations motordriverDevice_fops = {
 	.owner = THIS_MODULE,
 	.write = motordriver_device_write,
-	.read = motordriver_device_read,
 	.release = motordriver_device_close,
 	.open = motordriver_device_open,
 };

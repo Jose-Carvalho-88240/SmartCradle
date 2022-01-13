@@ -105,7 +105,7 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 			bitCounter++;
 		}
 	}
-	pr_alert("%s: Bits received @ bits = %d.\n",__FUNCTION__,bitCounter);
+
 	if( bitCounter >= 40)
 	{
 		u_int8_t checksum=0;

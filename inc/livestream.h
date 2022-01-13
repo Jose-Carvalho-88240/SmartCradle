@@ -8,7 +8,6 @@ void initServer();
 
 /**
  * @brief Close the server
- * 
  */
 void endServer();
 
@@ -20,7 +19,7 @@ void endServer();
 int startLivestream();
 
 /**
- * @brief Stop the server
+ * @brief Stop the livestream
  */
 void stopLivestream();
 

@@ -127,14 +127,3 @@ def send_swing_flag(b):
     x = x+1
     
   return -1  
-
-#ret = db.child("Smartcoisas").get()
-#valor especifico do get ----> importante para as funções 
-#p=int(ret.val()["get"])
-
-#def multiply(a,b):  used for testing purposes
-
-  print("This is a: %d",a)
-  print("This is b: %d",b)
-
-  return 2

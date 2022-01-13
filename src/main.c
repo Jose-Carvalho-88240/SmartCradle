@@ -15,46 +15,66 @@
 #include <sys/time.h>
 #include <string.h>
 #include "../inc/database.h"
-#include "../inc/wifi.h"
 #include "../inc/microphone.h"
 #include "../inc/livestream.h"
 #include "../inc/motor.h"
 #include "../inc/dht.h"
 
-#define MSGQOBJ_NAME    "/mqLocalDaemon"
-#define SHMEMOBJ_NAME "/shLocalDaemon"
+#define MSGQOBJ_NAME    "/mqLocalDaemon" /* Message queue name */
+#define SHMEMOBJ_NAME "/shLocalDaemon" /* Shared memory name */
 #define MAX_MSG_LEN     128
 
-/* priorites of each thread */
-#define streamPrio 2
-#define motorPrio 2
-#define updateDatabasePrio 3
-#define sensorPrio 4
+#define streamPrio 2 /* tStartStopStream priority */
+#define motorPrio 2 /* tStartStopMotor priority */
+#define updateDatabasePrio 3 /* tUpdateDatabase priority */
+#define sensorPrio 4 /* tReadSensor priority */
 
-#define motorTimeout 10 /* Minutes */
-#define sensorSample 10 /* Minutes */
+#define motorTimeout 10 /* Motor timeout in minutes */
+#define sensorSample 10 /* Sensor sampling time in minutes */
 
-_Bool motorFlag = 0;
-_Bool streamFlag = 0;
-_Bool sensorFlag = 0;
+_Bool motorFlag = 0; /* Motor/Swing flag */
+_Bool streamFlag = 0; /* Livestream flag */
+_Bool sensorFlag = 0; /* Sensor sample successful flag */
 
 pthread_mutex_t motorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (motorFlag) */
 pthread_mutex_t streamFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (streamFlag) */
 pthread_mutex_t sensorFlag_mutex = PTHREAD_MUTEX_INITIALIZER; /* shared variable (sensorFlag) */
 
-float databaseTemperature = 0;
-float databaseHumidity = 0;
+float databaseTemperature = 0; /* Temperature to send to database */
+float databaseHumidity = 0; /* Humidity to send to database */
 
-pid_t daemonPID;
+pid_t daemonPID; /* Daemon PID */
 
-mqd_t msgq_id;
-struct mq_attr msgq_attr;
+mqd_t msgq_id; /* Message queue ID */
+struct mq_attr msgq_attr; /* Message queue attributes */
 
+
+/**
+ * @brief Initializes the thread parameters with defined priority
+ * 
+ * @param priority Thread priority
+ * @param pthread_attr Thread attributes structure
+ * @param pthread_param Thread parameters structure
+ */
+void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param);
+
+/**
+ * @brief Check for errors upon creating threads
+ * 
+ * @param status : Value returned from functions
+ */
+void checkErrors(int status);
+
+/**
+ * @brief Proces signal handler
+ * 
+ * @param signo Signal received
+ */
 static void signalHandler(int signo) 
 {
 	switch (signo)
 	{
-	    case (SIGALRM):
+	    case (SIGALRM): //Timer has ended
             pthread_mutex_lock(&motorFlag_mutex);
             motorFlag = 0;
             send_swing_flag(motorFlag);
@@ -62,7 +82,7 @@ static void signalHandler(int signo)
             printf("Motor flag was updated in the database.\n");
 		break;
 
-        case (SIGUSR1):
+        case (SIGUSR1): //Signal received from Daemon
             send_notification_flag(1);
             printf("Notification flag was updated in the database.\n");
 		break;
@@ -75,15 +95,20 @@ static void signalHandler(int signo)
             endServer(); //close server
             remMotor(); //remove motor device driver
             remDHT11(); //remove sensor device driver
-            const char cmd[30];
-            sprintf(cmd, "killall daemon.elf"); 
-            system(cmd); //kill Daemon
-            Py_FinalizeEx(); //close python interpreter
+            kill(daemonPID,SIGTERM); //kill daemon
+            if(Py_IsInitialized())
+                Py_FinalizeEx(); //close python interpreter
             exit(1);
         break;
 	}
 }
 
+/**
+ * @brief Reads from temperature and humidity sensor and stores values
+ * 
+ * If sampling fails, there will be another 2 consecutive samplings. If it
+ * fails again, the thread will go into sleep until next sample time
+ */
 void *tReadSensor(void *arg)
 {
     dht11_t sensorSampling; 
@@ -134,6 +159,9 @@ void *tReadSensor(void *arg)
 
 }
 
+/**
+ * @brief Controls the livestream depending on livestream flag value
+ */
 void *tStartStopStream (void *arg)
 {
     while(1)
@@ -153,6 +181,9 @@ void *tStartStopStream (void *arg)
     }
 }
 
+/**
+ * @brief Controls the motor depending on swing flag value
+ */
 void *tStartStopMotor (void *arg)
 {
     struct itimerval itv;
@@ -191,18 +222,29 @@ void *tStartStopMotor (void *arg)
     }
 }
 
+/**
+ * @brief Update values to/from database
+ * 
+ * Updates temperature and humidity in database, 
+ * get livestream flag and swing flag values from
+ * database
+ */
 void *tUpdateDatabase(void *arg)
 {
     unsigned int ret;
     _Bool dMotorFlag, dStreamFlag;
     Py_Initialize();
-    initDatabase();
-
+    ret = initDatabase();
+    if(ret == -ERROR);
+    {
+        fprintf(stderr, "In initDatabase()\n");
+        exit(1);
+    }
     while(1)
     {
         /*  
         *   Update temperature and humidity 
-        *   of the database
+        *   in the database
         */
         if(sensorFlag)
         {
@@ -265,11 +307,10 @@ void *tUpdateDatabase(void *arg)
     Py_FinalizeEx(); // for redundancy purposes
 }
 
-void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param);
-void checkErrors(int status);
-
 int main (int argc, char *argv[])
 {
+    int ret;
+
     msgq_attr.mq_flags = 0;  
     msgq_attr.mq_maxmsg = 1;  
     msgq_attr.mq_msgsize = 5;  
@@ -293,9 +334,23 @@ int main (int argc, char *argv[])
     */
     int fd;
     fd = shm_open(SHMEMOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, 0666);
+    if(fd < 0)
+    {
+        mq_unlink(MSGQOBJ_NAME);
+        shm_unlink(SHMEMOBJ_NAME);
+        fprintf(stderr, "Error %s in shm_open()\n",errno);
+        exit(1);
+    }
     ftruncate(fd, sizeof(pid_t));
     void* ptr;
     ptr = mmap(0, sizeof(pid_t),PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0);
+    if(ptr == (void *)-1)
+    {
+        mq_unlink(MSGQOBJ_NAME);
+        shm_unlink(SHMEMOBJ_NAME);
+        fprintf(stderr, "Error %s in mmap()\n",errno);
+        exit(1);
+    }
     sprintf(ptr, "%d", my_pid);
 
     /*
@@ -312,8 +367,22 @@ int main (int argc, char *argv[])
     *   Read Daemon's PID
     */
     daemonPID = atoi((char*)ptr);
-    munmap(0, sizeof(pid_t));
-    shm_unlink(SHMEMOBJ_NAME);
+    ret = munmap(0, sizeof(pid_t));
+    if(ret < 0)
+    {
+        mq_unlink(MSGQOBJ_NAME);
+        kill(daemonPID, SIGTERM);
+        fprintf(stderr, "Error %s in munmap()\n",errno);
+        exit(1);
+    }
+    ret = shm_unlink(SHMEMOBJ_NAME);
+    if(ret < 0)
+    {
+        mq_unlink(MSGQOBJ_NAME);
+        kill(daemonPID, SIGTERM);
+        fprintf(stderr, "Error %s in shm_unlink()\n",errno);
+        exit(1);
+    }
 
     /*
     *   Define the signal handler

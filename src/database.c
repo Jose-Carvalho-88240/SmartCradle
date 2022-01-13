@@ -10,7 +10,11 @@ int send_temp_hum( float temp, float hum)
 {
     //Call the function with arguments -> i = one integer , "ii" = two integers , "d" -> double mkvalue-style format string
     pResult = PyObject_CallFunction(pFuncSend_temp_hum, "ff", temp, hum);
-    PyErr_Print();
+    if(pResult == NULL)
+    {
+        PyErr_Print();
+        return 0;
+    }
 
     //Cleanup
     Py_XDECREF(pResult);
@@ -22,7 +26,11 @@ int get_swing_flag()
 {
     //Call the function with arguments -> i = one integer , "ii" = two integers , "d" -> double mkvalue-style format string
     pResult = PyObject_CallFunction(pFuncGet_swing_flag, NULL);
-    PyErr_Print();
+    if(pResult == NULL)
+    {
+        PyErr_Print();
+        return 0;
+    }
 
     //Truncates the result to int since the Python function results
     //Translates from Python to C double
@@ -46,6 +54,11 @@ int get_live_flag()
 {
     //Call the function with arguments -> i = one integer , "ii" = two integers , "d" -> double mkvalue-style format string
     pResult = PyObject_CallFunction(pFuncGet_live_flag, NULL);
+    if(pResult == NULL)
+    {
+        PyErr_Print();
+        return 0;
+    }
     PyErr_Print();
 
     //Truncates the result to int since the Python function results
@@ -70,7 +83,11 @@ int send_notification_flag( int notification_flag)
 {
     //Call the function with arguments -> i = one integer , "ii" = two integers , "d" -> double mkvalue-style format string
     pResult = PyObject_CallFunction(pFuncSend_notification_flag, "i", notification_flag);
-    PyErr_Print();
+    if(pResult == NULL)
+    {
+        PyErr_Print();
+        return 0;
+    }
 
     //Cleanup
     Py_XDECREF(pResult);
@@ -82,8 +99,12 @@ int send_swing_flag(int swing_flag)
 {
     //Call the function with arguments -> i = one integer , "ii" = two integers , "d" -> double mkvalue-style format string
     pResult = PyObject_CallFunction(pFuncSend_swing_flag, "i", swing_flag);
-    PyErr_Print();
-
+    if(pResult == NULL)
+    {
+        PyErr_Print();
+        return 0;
+    }
+    
     //Cleanup
     Py_XDECREF(pResult);
 
@@ -115,6 +136,7 @@ int initDatabase()
     if (!PyCallable_Check(pFuncSend_notification_flag))
     {
         PyErr_Print();
+        return 0;
     }
 
     pFuncSend_temp_hum = PyDict_GetItemString(pDict, (char*) "send_temp_hum");
@@ -123,6 +145,7 @@ int initDatabase()
     if (!PyCallable_Check(pFuncSend_temp_hum))
     {
         PyErr_Print();
+        return 0;
     }
 
     pFuncGet_live_flag = PyDict_GetItemString(pDict, (char*) "get_live_flag");
@@ -131,6 +154,7 @@ int initDatabase()
     if (!PyCallable_Check(pFuncGet_live_flag))
     {
         PyErr_Print();
+        return 0;
     }
 
     pFuncGet_swing_flag = PyDict_GetItemString(pDict, (char*) "get_swing_flag");
@@ -139,6 +163,7 @@ int initDatabase()
     if (!PyCallable_Check(pFuncGet_swing_flag))
     {
         PyErr_Print();
+        return 0;
     }
 
     pFuncSend_swing_flag = PyDict_GetItemString(pDict, (char*) "send_swing_flag");
@@ -147,6 +172,7 @@ int initDatabase()
     if (!PyCallable_Check(pFuncSend_swing_flag))
     {
         PyErr_Print();
+        return 0;
     }
     
     return 1;

@@ -18,16 +18,37 @@
 #include <sys/shm.h>
 #include "../inc/microphone.h"
 
-#define detectCryingPrio 3
-#define watchFlagPrio 2
+#define detectCryingPrio 3 /* tDetectCrying priority*/
+#define watchFlagPrio 2 /* tWatchFlag priority */
 
-#define MSGQOBJ_NAME "/mqLocalDaemon"
-#define SHMEMOBJ_NAME "/shLocalDaemon"
+#define MSGQOBJ_NAME    "/mqLocalDaemon" /* Message queue name */
+#define SHMEMOBJ_NAME "/shLocalDaemon" /* Shared memory name */
 
-mqd_t msgq_id;
+mqd_t msgq_id; /* Message queue ID */
 
-_Bool isStreamActive = 0;
+_Bool isStreamActive = 0; /* Defines if livestream is active in main process */
 
+/**
+ * @brief Initializes the thread parameters with defined priority
+ * 
+ * @param priority Thread priority
+ * @param pthread_attr Thread attributes structure
+ * @param pthread_param Thread parameters structure
+ */
+void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param);
+
+/**
+ * @brief Check for errors upon creating threads
+ * 
+ * @param status : Value returned from functions
+ */
+void checkErrors(int status);
+
+/**
+ * @brief Process signal handler
+ * 
+ * @param signo : Signal received
+ */
 static void signalHandler(int signo)
 {
     switch (signo)
@@ -35,10 +56,14 @@ static void signalHandler(int signo)
     case (SIGTERM):
         syslog(LOG_INFO, "SIGTERM received. Closing daemon...\n");
         exit(1);
-        break;
     }
 }
 
+/**
+ * @brief Detects crying from microphone
+ * 
+ * @param local_pid : Local process ID
+ */
 void *tDetectCrying(void *local_pid)
 {
     int ret = 0;
@@ -82,12 +107,15 @@ void *tDetectCrying(void *local_pid)
                 }
             }
             else
-                syslog(LOG_ERR, "Error when calling startRecording().\n");  
+                syslog(LOG_ERR, "In startRecording().\n");  
         }
         sleep(2);
     }
 }
 
+/**
+ * @brief Watches message queue for any changes in livestream flag
+ */
 void *tWatchStreamFlag(void *arg)
 {
     struct mq_attr msgq_attr;
@@ -125,17 +153,14 @@ void *tWatchStreamFlag(void *arg)
     }
 }
 
-void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param);
-void checkErrors(int status);
-
 int main(int argc, char *args[])
 {
     pid_t localPID = 0;
+    int ret;
 
     msgq_id = mq_open(MSGQOBJ_NAME, O_RDONLY | O_NONBLOCK);
     if (msgq_id == (mqd_t)-1) {
-        fprintf(stderr,"mq_open() got error %d\n",msgq_id);
-        perror("mq_open()");
+        syslog(LOG_ERR, "mq_open() got error %d\n",msgq_id);
         exit(1);
     }
  
@@ -188,9 +213,21 @@ int main(int argc, char *args[])
     fd = shm_open(SHMEMOBJ_NAME, O_RDWR, 0666);
     void *ptr;
     ptr = mmap(0, sizeof(pid_t), PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0);
+    if(ptr == (void *)-1)
+    {
+        shm_unlink(SHMEMOBJ_NAME);
+        syslog(LOG_ERR, "Error %s in mmap()\n",errno);
+        exit(1);
+    }
     localPID = atoi((char *)ptr);
     sprintf(ptr, "%d", pid);
-    munmap(0, sizeof(pid_t));
+    ret = munmap(0, sizeof(pid_t));
+    if(ret < 0)
+    {
+        shm_unlink(SHMEMOBJ_NAME);
+        syslog(LOG_ERR, "Error %s in munmap()\n",errno);
+        exit(1);
+    }
     syslog(LOG_INFO, "Received local PID: %d\n",localPID);
 
     /*

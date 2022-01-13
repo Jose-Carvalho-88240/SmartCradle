@@ -14,7 +14,7 @@ void remDHT11(void){
 }
 
 int readDHT11(dht11_t *data){
-    int fd0 = open("/dev/dht110", O_RDWR);  
+    int fd0 = open("/dev/dht110", O_RDONLY);  
     
     if(fd0 == -1)
     {

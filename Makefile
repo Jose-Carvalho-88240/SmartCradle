@@ -44,15 +44,15 @@ daemon: $(OBJS_DAEMON)
 drivers:
 	$(MAKE) -C $(KERNEL_DIR) M=$$PWD
 	rm *.o *.mod *.mod.c *.symvers *.order
-	rm src/utils.o
-	rm driver_motor/*.o
-	mv motordriver.ko bin/
-	rm driver_dht/*.o
-	mv dht11.ko bin/
+	rm $(SOURCEDIR)/utils.o
+	rm $(MDRIVERDIR)/*.o
+	mv motordriver.ko $(BINDIR)
+	rm $(DDRIVERDIR)/*.o
+	mv dht11.ko $(BINDIR)
 
 %.o: %.c $(MAIN_DEPS) $(DAEMON_DEPS)
 	$(CROSS_COMPILE) -c -o $@ $< $(CFLAGS)
 
 # remove all built files
 clean:
-	rm -f -r bin/*
+	rm -f -r $(BINDIR)/*
