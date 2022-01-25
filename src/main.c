@@ -128,17 +128,19 @@ void *tReadSensor(void *arg)
 
     while(1)
     {
-        if(readDHT11(&sensorSampling))
-        {
-            samplingTries = 0;
-             printf("Sensor sampling successful:\n");
-        }
-        else
-        {
-            samplingTries++;
-            fprintf(stderr,"Failed to sample sensor...Trying again.\n");
-            perror("readDHT11()");       
-        }
+        do{
+            if(readDHT11(&sensorSampling))
+            {
+                samplingTries = 0;
+                printf("Sensor sampling successful:\n");
+            }
+            else
+            {
+                samplingTries++;
+                fprintf(stderr,"Failed to sample sensor...Trying again in 5 seconds.\n");
+                sleep(5);   
+            }
+        }while(samplingTries > 0 && samplingTries < 3);
 
         if(!samplingTries)
         {
@@ -158,8 +160,7 @@ void *tReadSensor(void *arg)
         else if(samplingTries == 3)
         {
             samplingTries = 0;
-            fprintf(stderr,"Failed to sample sensor 3 times. Ignoring...\n");
-            perror("tReadSensor()");     
+            fprintf(stderr,"Failed to sample sensor 3 times. Ignoring...\n");    
         }
 
         /* Pause for sensorSample minutes */
