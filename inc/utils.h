@@ -12,7 +12,7 @@
 
 #include <linux/types.h>
 
-#define BCM2711_PERI_BASE       0xfe000000
+#define BCM2711_PERI_BASE 0xfe000000
 #define GPIO_BASE (BCM2711_PERI_BASE + 0x200000) // GPIO controller
 
 // PIN FUNCTION
@@ -46,7 +46,21 @@ struct GpioRegisters
 	unsigned int GPCLR[2];
 	unsigned int Reserved3;
 	unsigned int GPLEV[2];
-	unsigned int Reserved4[42];
+	unsigned int Reserved4;
+	unsigned int GPEDS[2];
+	unsigned int Reserved5;
+	unsigned int GPREN[2];
+	unsigned int Reserved6;
+	unsigned int GPFEN[2];
+	unsigned int Reserved7;
+	unsigned int GPHEN[2];
+	unsigned int Reserved8;
+	unsigned int GPLEN[2];
+	unsigned int Reserved9;
+	unsigned int GPAREN[2];
+	unsigned int Reserved10;
+	unsigned int GPAFEN[2];
+	unsigned int Reserved11[21];
 	unsigned int GPIO_PUP_PDN_CNTRL_REG[4];
 };
 

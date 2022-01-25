@@ -29,7 +29,7 @@
 #include "../inc/motor.h"
 #include "../inc/dht.h"
 
-#define MSGQOBJ_NAME    "/mqLocalDaemon" /**< Message queue name */
+#define MSGQOBJ_NAME "/mqLocalDaemon" /**< Message queue name */
 #define SHMEMOBJ_NAME "/shLocalDaemon" /**<Shared memory name */
 #define MAX_MSG_LEN     128
 
@@ -240,11 +240,11 @@ void *tStartStopMotor (void *arg)
  */
 void *tUpdateDatabase(void *arg)
 {
-    unsigned int ret;
+    int ret;
     _Bool dMotorFlag, dStreamFlag;
     Py_Initialize();
     ret = initDatabase();
-    if(ret == -ERROR);
+    if(ret == -ERROR)
     {
         fprintf(stderr, "In initDatabase()\n");
         exit(1);

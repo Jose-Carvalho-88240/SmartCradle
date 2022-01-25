@@ -27,15 +27,15 @@
 #include <sys/shm.h>
 #include "../inc/microphone.h"
 
-#define detectCryingPrio 3 /* tDetectCrying priority*/
-#define watchFlagPrio 2 /* tWatchFlag priority */
+#define detectCryingPrio 3 /**<tDetectCrying priority*/
+#define watchFlagPrio 2 /**< tWatchFlag priority */
 
-#define MSGQOBJ_NAME    "/mqLocalDaemon" /* Message queue name */
-#define SHMEMOBJ_NAME "/shLocalDaemon" /* Shared memory name */
+#define MSGQOBJ_NAME "/mqLocalDaemon" /**< Message queue name */
+#define SHMEMOBJ_NAME "/shLocalDaemon" /**< Shared memory name */
 
-mqd_t msgq_id; /* Message queue ID */
+mqd_t msgq_id; /**< Message queue ID */
 
-_Bool isStreamActive = 0; /* Defines if livestream is active in main process */
+_Bool isStreamActive = 0; /**< Defines if livestream is active in main process */
 
 /**
  * @brief Initializes the thread parameters with defined priority

@@ -17,7 +17,11 @@ int main(void)
 
     readDHT11(&sensorData);
 
-    putchar('\n');
+    float  temperature = sensorData.TemperatureI + (float)(sensorData.TemperatureD)/100;
+    float humidity = sensorData.HumidityI + (float)(sensorData.HumidityD)/100;
+
+    printf("\tTemperature: %.2f \ºC \n \tHumidity: %.2f \%\n", temperature, humidity);
+
     printf("Removing Device Driver.\n");
     system("rmmod dht11");
 
