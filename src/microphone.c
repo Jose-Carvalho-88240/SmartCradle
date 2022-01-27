@@ -64,7 +64,7 @@ static float calculateLoudness()
     {
         sum += (float)pow((double)buffer[i],2);
     }
-    float ms = sqrt(sum)/(inFileInfo.frames*inFileInfo.channels);
+    float ms = sqrt(sum)/samples;
     
     return 10*log10(ms);
 }

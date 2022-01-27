@@ -29,7 +29,7 @@
 #include "../inc/motor.h"
 #include "../inc/dht.h"
 
-#define MSGQOBJ_NAME "/mqLocalDaemon" /**< Message queue name */
+#define MSGQOBJ_NAME "/mqLocalDaemon" /**<Message queue name */
 #define SHMEMOBJ_NAME "/shLocalDaemon" /**<Shared memory name */
 #define MAX_MSG_LEN     128
 
@@ -41,7 +41,7 @@
 #define motorTimeout 10 /**<Motor timeout in minutes */
 #define sensorSample 10 /**<Sensor sampling time in minutes */
 
-_Bool motorFlag = 0; /**<Motor/Swing flag */
+_Bool motorFlag = 0; /**<Motor flag */
 _Bool streamFlag = 0; /**<Livestream flag */
 _Bool sensorFlag = 0; /**<Sensor sample successful flag */
 

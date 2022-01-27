@@ -51,7 +51,7 @@ void stopLivestream()
 {
     if(streamRunning)
     {
-        system("pidof ffmpeg | xargs kill -9");
+        system("pidof ffmpeg | xargs kill -9"); //9 = SIGKILL
         streamRunning = 0;
     }
 }

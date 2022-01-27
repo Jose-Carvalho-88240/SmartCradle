@@ -89,20 +89,17 @@ void *tDetectCrying(void *local_pid)
             {
                 syslog(LOG_INFO, "Recording ended.\n");  
                 ret = processAudio(&f);
-                syslog(LOG_INFO, "Audio process returned: %d | loudness : %.3f\n", ret, f);
-                if(!ret || ret == 1)
+                switch(ret)
                 {
-                    syslog(LOG_INFO, "Audio process returned: %d | loudness : %.3f\n", ret, f);
-                    if (ret)
-                    {
-                        syslog(LOG_INFO, "Signaling local system at PID: %d\n", local_pid);
-                        kill(local_pid, SIGUSR1);
-                    }
-                }
-                else
-                {
-                    switch (ret)
-                    {
+                    case 0:
+                        syslog(LOG_INFO, "Audio process returned: %d | loudness : %.3f\n", ret, f);
+                    case 1:
+                        if (ret)
+                        {
+                            syslog(LOG_INFO, "Signaling local system at PID: %d\n", local_pid);
+                            kill(local_pid, SIGUSR1);
+                        }
+                        break;
                     case ERR_OPEN:
                         syslog(LOG_ERR, "Error when opening file audiorecord.wav.\n" );
                         break;
@@ -112,7 +109,6 @@ void *tDetectCrying(void *local_pid)
                     default:
                         syslog(LOG_ERR, "In processAudio()\n" );
                         break;
-                    }
                 }
             }
             else
@@ -141,12 +137,12 @@ void *tWatchStreamFlag(void *arg)
             ret = mq_receive(msgq_id, msg, 6, NULL);
             if (ret > 0)
             {
-                syslog(LOG_INFO, "Message received from local: %s\n", msg);
+                syslog(LOG_INFO, "Command received: %s\n", msg);
                 if (!strncmp(msg, msg_type, strlen(msg_type)))
                 {
                     syslog(LOG_INFO, "Command valid.\n");
                     isStreamActive = msg[3];
-                    syslog(LOG_INFO, "Streaming is: %d\n", isStreamActive);
+                    syslog(LOG_INFO, "Streaming is now %d.\n", isStreamActive);
                 }
                 else
                     syslog(LOG_ERR, "Command not valid.\n");
@@ -219,7 +215,7 @@ int main(int argc, char *args[])
     *   and send Daemon's PID
     */
     int fd;
-    fd = shm_open(SHMEMOBJ_NAME, O_RDWR, 0666);
+    fd = shm_open(SHMEMOBJ_NAME, O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
     void *ptr;
     ptr = mmap(0, sizeof(pid_t), PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0);
     if(ptr == (void *)-1)
@@ -229,7 +225,7 @@ int main(int argc, char *args[])
         exit(1);
     }
     localPID = atoi((char *)ptr);
-    sprintf(ptr, "%d", pid);
+    sprintf(ptr, "%d", getpid());
     ret = munmap(0, sizeof(pid_t));
     if(ret < 0)
     {
