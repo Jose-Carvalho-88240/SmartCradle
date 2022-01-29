@@ -3,12 +3,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-void simpleDelay (void)
-{
-    volatile unsigned int i;
-    for (i = 0; i != 100000000; i++);
-}
-
 int main(void)
 {
     sleep(5);

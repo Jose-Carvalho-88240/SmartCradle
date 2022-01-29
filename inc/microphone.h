@@ -42,6 +42,6 @@ int startRecording();
  * 
  * @return int
  */
-int processAudio(float *f);
+int processAudio(float *loudness);
 
 #endif

@@ -7,8 +7,8 @@
  * @copyright Copyright (c) 2022
  */
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef GPIO_H
+#define GPIO_H
 
 #include <linux/types.h>
 

@@ -18,8 +18,6 @@
 #define DEVICE_NAME "dht110"
 #define CLASS_NAME "dht11Class"
 
-MODULE_LICENSE("GPL");
-
 /* Device variables */
 static struct class* dht11Device_class = NULL;
 static struct device* dht11Device_device = NULL;
@@ -32,6 +30,10 @@ struct GpioRegisters *s_pGpioRegisters;
 
 static const int DATA = 25;
 
+/*
+ * Waits for the GPIO to change its level before reaching
+ * the timeout (in us).
+ */ 
 static int wait(struct GpioRegisters *s_pGpioRegisters, int GPIO, bool level, int timeout)
 {
     int cnt = 0;
@@ -61,20 +63,20 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 
 	pdev = (struct GpioRegisters *)pfile->private_data;
 
-	SetGPIOFunction(pdev, DATA, OUTPUT); //Output
-	SetGPIOValue(pdev,DATA,LOW);
-	mdelay(18);
-	SetGPIOValue(pdev,DATA,HIGH);
-	udelay(40);
-	SetGPIOFunction(pdev, DATA, INPUT); //Input
+	SetGPIOFunction(pdev, DATA, OUTPUT); //Set pin to output
+	SetGPIOValue(pdev,DATA,LOW); //Set pin LOW
+	mdelay(18); //Wait for 18ms
+	SetGPIOValue(pdev,DATA,HIGH); //Set pin HIGH
+	udelay(40); //Wait for 40us
+	SetGPIOFunction(pdev, DATA, INPUT); //Set pin to input
 
-	if(!wait(pdev, DATA, 0,100))
+	if(!wait(pdev, DATA, 0,100)) //Wait for the sensor's acknowledge
 	{
 		pr_alert("%s: Timeout. No ACK from sensor.\n",__FUNCTION__,len);
 		return 0;
 	}
 
-	if(!wait(pdev, DATA, 1,100))
+	if(!wait(pdev, DATA, 1,100)) //Wait for the sensor's response
 	{
 		pr_alert("%s: Timeout.\n",__FUNCTION__,len);
 		return 0;
@@ -97,7 +99,7 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 		}
 		lastState = GetGPIOValue(pdev,DATA);
 
-		if( ( i >= 1) && (i % 2) )
+		if( ( i >= 1) && (i % 2) ) //Only get data bits
 		{
 			sensorData.CompleteSample[bitCounter / 8] <<= 1;
 			if(timeCounter > 30)
@@ -108,12 +110,13 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 
 	if( bitCounter >= 40)
 	{
+		//Calculate the checksum
 		u_int8_t checksum=0;
 		for(i = 0; i < 4; i++)
 			checksum += sensorData.CompleteSample[i];
 		sensorData.checksum=checksum;
 
-		if(sensorData.checksum != sensorData.CompleteSample[4])
+		if(sensorData.checksum != sensorData.CompleteSample[4]) //Verify the checksum
 		{
 			pr_alert("%s: Sampling error. Checksum mismatch: %d != %d\n",__FUNCTION__,sensorData.checksum,sensorData.CompleteSample[4]);
 			return 0;
@@ -126,7 +129,7 @@ ssize_t dht11_device_read(struct file *pfile, char __user *p_buff,size_t len, lo
 
 		int ret;
 		do{
-			ret=copy_to_user(p_buff,(void *)&sensorData,sizeof(sensorData));
+			ret=copy_to_user(p_buff,(void *)&sensorData,sizeof(sensorData)); //Send to user space
 		}while(ret);
 
 		return len;
@@ -209,3 +212,5 @@ static void __exit dht11Module_exit(void) {
 
 module_init(dht11Module_init);
 module_exit(dht11Module_exit);
+
+MODULE_LICENSE("GPL");

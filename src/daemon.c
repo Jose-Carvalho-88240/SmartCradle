@@ -78,9 +78,9 @@ void *tDetectCrying(void *local_pid)
     int ret = 0;
     while (1)
     {
-        if (!isStreamActive)
+        if (!isStreamActive) //If streaming is not active
         {
-            float f = 0;
+            float loudness = 0;
 
             syslog(LOG_INFO, "Recording will start.\n");
             ret = startRecording();
@@ -88,25 +88,22 @@ void *tDetectCrying(void *local_pid)
             if(!ret)
             {
                 syslog(LOG_INFO, "Recording ended.\n");  
-                ret = processAudio(&f);
+                ret = processAudio(&loudness);
                 switch(ret)
                 {
-                    case 0:
-                        syslog(LOG_INFO, "Audio process returned: %d | loudness : %.3f\n", ret, f);
-                    case 1:
-                        if (ret)
-                        {
-                            syslog(LOG_INFO, "Signaling local system at PID: %d\n", local_pid);
-                            kill(local_pid, SIGUSR1);
-                        }
-                        break;
-                    case ERR_OPEN:
+                    case 1: //Loudness exceeds the limit
+                        syslog(LOG_INFO, "Signaling local system at PID: %d\n", local_pid);
+                        kill(local_pid, SIGUSR1);
+                    case 0: //Loudness does not exceed the limit
+                        syslog(LOG_INFO, "Audio process returned: %d | loudness : %.3f\n", ret, loudness);
+                        break;     
+                    case ERR_OPEN: //Error in processAudio()
                         syslog(LOG_ERR, "Error when opening file audiorecord.wav.\n" );
                         break;
-                    case ERR_READ:
+                    case ERR_READ: //Error in processAudio()
                         syslog(LOG_ERR, "Error when reading from file audiorecord.wav.\n" );
                         break;
-                    default:
+                    default: //Error in processAudio()
                         syslog(LOG_ERR, "In processAudio()\n" );
                         break;
                 }
@@ -114,6 +111,8 @@ void *tDetectCrying(void *local_pid)
             else
                 syslog(LOG_ERR, "In startRecording().\n");  
         }
+
+        /* Sleep for 2 seconds */
         sleep(2);
     }
 }
@@ -125,23 +124,23 @@ void *tWatchStreamFlag(void *arg)
 {
     struct mq_attr msgq_attr;
     char *msg;
-    const char msg_type[4] = "LV-";
+    const char msg_type[4] = "LV-"; //Command structure
     unsigned int ret;
 
     while (1)
     {
         mq_getattr(msgq_id, &msgq_attr);
-        if (msgq_attr.mq_curmsgs)
+        if (msgq_attr.mq_curmsgs) //If there are messages on the message queue
         {
             msg = malloc(6);
-            ret = mq_receive(msgq_id, msg, 6, NULL);
+            ret = mq_receive(msgq_id, msg, 6, NULL); //Receive the message
             if (ret > 0)
             {
                 syslog(LOG_INFO, "Command received: %s\n", msg);
-                if (!strncmp(msg, msg_type, strlen(msg_type)))
+                if (!strncmp(msg, msg_type, strlen(msg_type))) //Checks if the command is valid
                 {
                     syslog(LOG_INFO, "Command valid.\n");
-                    isStreamActive = msg[3];
+                    isStreamActive = msg[3]; //Update variable with the current streamFlag value
                     syslog(LOG_INFO, "Streaming is now %d.\n", isStreamActive);
                 }
                 else
@@ -154,6 +153,8 @@ void *tWatchStreamFlag(void *arg)
             }
             free(msg);
         }
+
+        /* Sleep for 3 seconds */
         sleep(3);
     }
 }
@@ -168,7 +169,11 @@ int main(int argc, char *args[])
         syslog(LOG_ERR, "mq_open() got error %d\n",msgq_id);
         exit(1);
     }
- 
+    
+    /*
+    *   Define the signal handler to received SIGTERM from
+    *   the main process
+    */
     signal(SIGTERM, signalHandler);
 
     /*
@@ -254,47 +259,40 @@ int main(int argc, char *args[])
 
     initThread(watchFlagPrio, &thread_attr, &thread_param);
     anyError = pthread_create(&watchStreamFlagID, &thread_attr, tWatchStreamFlag, NULL);
-    checkErrors(anyError);
+    checkErrors(anyError); //Check for errors when creating thread
 
     initThread(detectCryingPrio, &thread_attr, &thread_param);
     anyError = pthread_create(&detectCryingID, &thread_attr, tDetectCrying, (void *)localPID);
-    checkErrors(anyError);
+    checkErrors(anyError); //Check for errors when creating thread
 
     pthread_detach(watchStreamFlagID);
     pthread_detach(detectCryingID);
 
-    while (1)
-    {
-    }
+    while (1){}
 }
 
 void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param)
 {
-    int min, max;
+	int min = sched_get_priority_min (SCHED_RR);
+	int max = sched_get_priority_max (SCHED_RR);
 
-    pthread_attr_setschedpolicy(pthread_attr, SCHED_RR);
-    min = sched_get_priority_min(SCHED_RR);
-    max = sched_get_priority_max(SCHED_RR);
-
-    if (priority < min || priority > max)
+    if(priority < min || priority > max) //If priority exceeds the limits
     {
-        syslog(LOG_ERR, "Thread priorities not valid.\n");
-        syslog(LOG_PERROR,"initThread()");
+        fprintf(stderr,"Thread priorities not valid.\n");
+        perror("initThread()");
         exit(1);
     }
-
     pthread_param->sched_priority = priority;
-
-    pthread_attr_setschedparam(pthread_attr, pthread_param);
+    pthread_attr_setschedparam(&pthread_attr, &pthread_param); //Set the thread's priority
 }
 
 void checkErrors(int status)
 {
-    if (status)
-    {
-        syslog(LOG_ERR, "pthread_create() got error %d\n", status);
-        errno = status;
-        syslog(LOG_PERROR, "pthread_create()");
-        exit(1);
-    }
+	if(status)
+	{     
+        fprintf(stderr,"pthread_create() got error %d\n",status);
+        errno=status;
+        perror("pthread_create()");
+        exit(1);    		
+  	}
 }

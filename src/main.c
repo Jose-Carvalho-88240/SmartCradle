@@ -86,19 +86,19 @@ static void signalHandler(int signo)
 	    case (SIGALRM): //Timer has ended
             pthread_mutex_lock(&motorFlag_mutex);
             motorFlag = 0;
-            send_swing_flag(motorFlag);
+            send_swing_flag(motorFlag); //Update the motor flag on the database
             pthread_mutex_unlock(&motorFlag_mutex);
             printf("Motor flag was updated in the database.\n");
 		break;
 
         case (SIGUSR1): //Signal received from Daemon
-            send_notification_flag(1);
+            send_notification_flag(1); //Update notification flag on the database
             printf("Notification flag was updated in the database.\n");
 		break;
 
         case (SIGINT):
             printf("Terminating program...\n");
-            mq_unlink(MSGQOBJ_NAME); //unlink msg q
+            mq_unlink(MSGQOBJ_NAME); //unlink msgQ
             stopMotor(); //stop motor
             stopLivestream(); //stop livestream
             endServer(); //close server
@@ -129,25 +129,29 @@ void *tReadSensor(void *arg)
     while(1)
     {
         do{
-            if(readDHT11(&sensorSampling))
+            if(readDHT11(&sensorSampling)) //Read from the sensor
             {
+                //Sampling successful
                 samplingTries = 0;
                 printf("Sensor sampling successful:\n");
             }
             else
             {
+                //Sampling failed
                 samplingTries++;
                 fprintf(stderr,"Failed to sample sensor...Trying again in 5 seconds.\n");
                 sleep(5);   
             }
-        }while(samplingTries > 0 && samplingTries < 3);
+        }while(samplingTries > 0 && samplingTries < 3); //Upon failure tries a maximum of 3 times before going to sleep
 
-        if(!samplingTries)
+        if(!samplingTries) //If sampling was successful
         {
             temperature = sensorSampling.TemperatureI + (float)(sensorSampling.TemperatureD)/100;
             humidity = sensorSampling.HumidityI + (float)(sensorSampling.HumidityD)/100;
 
             printf("\tTemperature: %.2f \ºC \n \tHumidity: %.2f \%\n", temperature, humidity);
+
+            //If the temperature or humidity values are different from those on the database, update them
             if( (temperature != databaseTemperature) || (humidity != databaseHumidity) )
             {
                 pthread_mutex_lock(&sensorFlag_mutex);
@@ -157,16 +161,15 @@ void *tReadSensor(void *arg)
                 pthread_mutex_unlock(&sensorFlag_mutex);
             }
         }
-        else if(samplingTries == 3)
+        else if(samplingTries == 3) //If sampling failed the 3 attempts
         {
             samplingTries = 0;
             fprintf(stderr,"Failed to sample sensor 3 times. Ignoring...\n");    
         }
 
-        /* Pause for sensorSample minutes */
+        /* Sleep for sensorSample minutes */
         sleep(60 * sensorSample); 
     }   
-
 }
 
 /**
@@ -176,14 +179,14 @@ void *tStartStopStream (void *arg)
 {
     while(1)
     {
-        if(streamFlag && !getStreamStatus())
+        if(streamFlag && !getStreamStatus()) //If streamFlag is on
         {
             if(startLivestream())
                 fprintf(stderr, "Error when starting stream.\n");
             else
                 printf("Livestream has started.\n");
         }
-        else if(!streamFlag && getStreamStatus())
+        else if(!streamFlag && getStreamStatus()) //If streamFlag is off
         {
             stopLivestream();
             printf("Livestream has stopped.\n");
@@ -199,7 +202,7 @@ void *tStartStopMotor (void *arg)
     struct itimerval itv;
     while(1)
     {   
-        if(motorFlag && !getMotorStatus())
+        if(motorFlag && !getMotorStatus()) //If motorFlag is on
         {
             if(startMotor())
             {           
@@ -207,14 +210,13 @@ void *tStartStopMotor (void *arg)
                 itv.it_interval.tv_usec = 0;
                 itv.it_value.tv_sec = 60 * motorTimeout;
                 itv.it_value.tv_usec = 0;
-                setitimer (ITIMER_REAL, &itv, NULL);
-
+                setitimer (ITIMER_REAL, &itv, NULL); //Start timer
                 printf("Motor has started.\n");
             }
             else
                 fprintf(stderr, "Error when starting motor.\n");
         }
-        else if(!motorFlag && getMotorStatus())
+        else if(!motorFlag && getMotorStatus()) //If motorFlag is off
         {
             if(stopMotor())
             {
@@ -222,8 +224,7 @@ void *tStartStopMotor (void *arg)
                 itv.it_interval.tv_usec = 0;
                 itv.it_value.tv_sec = 0;
                 itv.it_value.tv_usec = 0;
-                setitimer (ITIMER_REAL, &itv, NULL);
-
+                setitimer (ITIMER_REAL, &itv, NULL); //Stop timer
                 printf("Motor has stopped.\n");
             }
             else
@@ -243,8 +244,8 @@ void *tUpdateDatabase(void *arg)
 {
     int ret;
     _Bool dMotorFlag, dStreamFlag;
-    Py_Initialize();
-    ret = initDatabase();
+    Py_Initialize(); //Initialize the Python Interpreter
+    ret = initDatabase(); //Initialize the Database functions
     if(ret == -ERROR)
     {
         fprintf(stderr, "In initDatabase()\n");
@@ -256,14 +257,14 @@ void *tUpdateDatabase(void *arg)
         *   Update temperature and humidity 
         *   in the database
         */
+       pthread_mutex_lock(&sensorFlag_mutex);
         if(sensorFlag)
         {
-                pthread_mutex_lock(&sensorFlag_mutex);
                 sensorFlag = 0;
                 send_temp_hum(databaseTemperature,databaseHumidity);
-                pthread_mutex_unlock(&sensorFlag_mutex);
                 printf("Temperature and Humidity were updated in the database.\n");
         }
+        pthread_mutex_unlock(&sensorFlag_mutex);
 
         /*  
         *   Update motorFlag with the value 
@@ -289,28 +290,30 @@ void *tUpdateDatabase(void *arg)
             msg = malloc(4);
             if(msg == NULL)
             {
-                free(msg);
                 fprintf(stderr,"malloc() got error.\n");
-                break;
             }
-
-            if(dStreamFlag)
-                strcpy(msg,"LV-1");
             else
-                strcpy(msg,"LV-0");
-            ret = mq_send(msgq_id, msg, strlen(msg)+1, 1);
-            if(ret != 0)
             {
-                fprintf(stderr,"mq_send() got error %d\n",ret);
-                errno=ret;
-                perror("mq_send()");
+                //Set up the command LV-x
+                if(dStreamFlag)
+                    strcpy(msg,"LV-1");
+                else
+                    strcpy(msg,"LV-0");
+
+                ret = mq_send(msgq_id, msg, strlen(msg)+1, 1); //Send to the message queue
+                if(ret != 0)
+                {
+                    fprintf(stderr,"mq_send() got error %d\n",ret);
+                    errno=ret;
+                    perror("mq_send()");
+                }
             }
             free(msg);
         }
         streamFlag = dStreamFlag;
         pthread_mutex_unlock(&streamFlag_mutex);
         
-        /* Pause for 5 seconds */
+        /* Sleep for 5 seconds */
         sleep(5); 
     }
     mq_close(msgq_id);
@@ -326,9 +329,9 @@ int main (int argc, char *argv[])
     msgq_attr.mq_msgsize = 5;  
     msgq_attr.mq_curmsgs = 0; 
     msgq_id = mq_open(MSGQOBJ_NAME, O_WRONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU | S_IRWXG | S_IRWXO, &msgq_attr);
-    if(msgq_id == EEXIST)
+    if(msgq_id == EEXIST) //If the message queue already exists
     {
-        mq_unlink(MSGQOBJ_NAME);
+        mq_unlink(MSGQOBJ_NAME); //Unlink the message queue
         msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG | S_IRWXO, NULL);
     }
     if (msgq_id == (mqd_t)-1) {
@@ -338,16 +341,16 @@ int main (int argc, char *argv[])
   
     pid_t my_pid = getpid();
     printf("PID: %d\n",my_pid);
+
     /*
     *   Open shared memory to drop PID for Daemon
     *   and read Daemon's PID
     */
     int fd;
-    fd = shm_open(SHMEMOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, 0666);
+    fd = shm_open(SHMEMOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
     if(fd < 0)
     {
         mq_unlink(MSGQOBJ_NAME);
-        shm_unlink(SHMEMOBJ_NAME);
         fprintf(stderr, "Error %s in shm_open()\n",errno);
         exit(1);
     }
@@ -436,19 +439,19 @@ int main (int argc, char *argv[])
 
 	initThread(sensorPrio,&thread_attr,&thread_param);
 	anyError = pthread_create (&readSensorID, &thread_attr, tReadSensor, NULL);
-    checkErrors(anyError);
+    checkErrors(anyError); //Check for errors when creating thread
 
 	initThread(streamPrio,&thread_attr,&thread_param);
     anyError = pthread_create (&StartStopStreamID, &thread_attr, tStartStopStream, NULL);
-    checkErrors(anyError);
+    checkErrors(anyError); //Check for errors when creating thread
 
     initThread(motorPrio,&thread_attr,&thread_param);
     anyError = pthread_create (&StartStopMotorID, &thread_attr, tStartStopMotor, NULL);
-    checkErrors(anyError);
+    checkErrors(anyError); //Check for errors when creating thread
 
     initThread(updateDatabasePrio,&thread_attr,&thread_param);
     anyError = pthread_create (&updateDatabaseID, &thread_attr, tUpdateDatabase, NULL);
-    checkErrors(anyError);
+    checkErrors(anyError); //Check for errors when creating thread
 	
     pthread_detach (updateDatabaseID);
 	pthread_detach(StartStopStreamID);
@@ -460,21 +463,17 @@ int main (int argc, char *argv[])
 
 void initThread(int priority, pthread_attr_t *pthread_attr, struct sched_param *pthread_param)
 {
-	int min, max;
+	int min = sched_get_priority_min (SCHED_RR);
+	int max = sched_get_priority_max (SCHED_RR);
 
-	min = sched_get_priority_min (SCHED_RR);
-	max = sched_get_priority_max (SCHED_RR);
-
-    if(priority < min || priority > max)
+    if(priority < min || priority > max) //If priority exceeds the limits
     {
         fprintf(stderr,"Thread priorities not valid.\n");
         perror("initThread()");
         exit(1);
     }
-
     pthread_param->sched_priority = priority;
-
-    pthread_attr_setschedparam(&pthread_attr, &pthread_param);
+    pthread_attr_setschedparam(&pthread_attr, &pthread_param); //Set the thread's priority
 }
 
 void checkErrors(int status)

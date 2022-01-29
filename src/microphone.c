@@ -7,10 +7,10 @@
  * @copyright Copyright (c) 2022
  */
 
-#include "../inc/microphone.h"
 #include <sndfile.h>
 #include <sys/syslog.h>
 #include <sys/wait.h>
+#include "../inc/microphone.h"
 
 #define THRESHOLD -30  // Audio threshold [dB]
 #define LIMIT 3
@@ -46,44 +46,46 @@ static float calculateLoudness()
     float sum=0;
     int i;
 
-    inFileName = "/etc/audiorecord.wav";
+    inFileName = "/etc/audiorecord.wav"; //Audio file name
 
-    inFile = sf_open(inFileName, SFM_READ, &inFileInfo);
+    inFile = sf_open(inFileName, SFM_READ, &inFileInfo); //Open the .wav file with read permissions
     if(inFile == NULL)
         return ERR_OPEN;
 
-    int samples =  inFileInfo.frames*inFileInfo.channels;
+    int samples =  inFileInfo.frames*inFileInfo.channels; //Get the size of the audio file in samples
     float buffer[samples];
 
-    if(sf_read_float(inFile,buffer,samples) != samples)
+    if(sf_read_float(inFile,buffer,samples) != samples) //Read the audio file values to the buffer
         return ERR_READ;
     
     sf_close(inFile);
 
+    //Calculate the RMS value of the audio sample
     for(i = 0; i<inFileInfo.frames*inFileInfo.channels; i++)
     {
         sum += (float)pow((double)buffer[i],2);
     }
     float ms = sqrt(sum)/samples;
     
-    return 10*log10(ms);
+    return 10*log10(ms); //Returns in dB
 }
 
-int processAudio(float *f)
+int processAudio(float *loudness)
 {
     int ret = 0;
     static u_int8_t crying_counter = 0;
     float loudness;
     
-    loudness = calculateLoudness();
+    ret = calculateLoudness();
 
-    if(loudness == ERR_OPEN || loudness == ERR_READ)
-        return loudness;
+    if(ret == ERR_OPEN || ret == ERR_READ)
+        return ret;
 
-    *f = loudness;
+    *loudness = ret;
     
-    if(loudness > THRESHOLD)
+    if(ret > THRESHOLD)
     {
+        ret = 0;
         if(++crying_counter >= LIMIT)
         {
             crying_counter = 0;

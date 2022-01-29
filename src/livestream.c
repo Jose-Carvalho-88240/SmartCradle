@@ -7,9 +7,9 @@
  * @copyright Copyright (c) 2022
  */
 
-#include "../inc/livestream.h"
 #include <stdlib.h>
 #include <sys/wait.h>
+#include "../inc/livestream.h"
 
 static _Bool streamRunning; /* Status of the stream */
 
@@ -51,6 +51,7 @@ void stopLivestream()
 {
     if(streamRunning)
     {
+        //Get ffmpeg PID and kill the process
         system("pidof ffmpeg | xargs kill -9"); //9 = SIGKILL
         streamRunning = 0;
     }

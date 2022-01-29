@@ -7,12 +7,12 @@
  * @copyright Copyright (c) 2022
  */
 
-#include "../inc/motor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <linux/types.h>
+#include "../inc/motor.h"
 
 const char RUN = '1';
 const char STOP = '0';

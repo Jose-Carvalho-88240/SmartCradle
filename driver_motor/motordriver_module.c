@@ -16,8 +16,6 @@
 #define DEVICE_NAME "motordriver0"
 #define CLASS_NAME "motordriverClass"
 
-MODULE_LICENSE("GPL");
-
 /* Device variables */
 static struct class* motordriverDevice_class = NULL;
 static struct device* motordriverDevice_device = NULL;
@@ -40,13 +38,14 @@ ssize_t motordriver_device_write(struct file *pfile, const char __user *pbuff, s
 		return -EFAULT;
 
 	pdev = (struct GpioRegisters *)pfile->private_data;
-	if (pbuff[0]=='0')
+
+	if (pbuff[0]=='0') //Stop motor
 	{
 		pr_alert("%s: Motor is stopping...\n",__FUNCTION__);
 		SetGPIOValue(pdev, IN3, HIGH);
 		SetGPIOValue(pdev, IN4, HIGH);
 	}
-	else
+	else //Start motor
 	{
 		pr_alert("%s: Motor is running...\n",__FUNCTION__);
 		SetGPIOValue(pdev, IN3, HIGH);
@@ -133,3 +132,5 @@ static void __exit motordriverModule_exit(void) {
 
 module_init(motordriverModule_init);
 module_exit(motordriverModule_exit);
+
+MODULE_LICENSE("GPL");

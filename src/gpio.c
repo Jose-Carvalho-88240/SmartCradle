@@ -7,7 +7,7 @@
  * @copyright Copyright (c) 2022
  */
 
-#include "../inc/utils.h"
+#include "../inc/gpio.h"
 #include <linux/module.h>
 #include <linux/types.h>
 
