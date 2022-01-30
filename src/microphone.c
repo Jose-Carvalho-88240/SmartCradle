@@ -74,7 +74,6 @@ int processAudio(float *loudness)
 {
     int ret = 0;
     static u_int8_t crying_counter = 0;
-    float loudness;
     
     ret = calculateLoudness();
 
