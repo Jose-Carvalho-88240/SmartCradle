@@ -7,7 +7,6 @@
  * @copyright Copyright (c) 2022
  */
 
-
 #ifndef MOTOR_H
 #define MOTOR_H
 

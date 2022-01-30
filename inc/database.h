@@ -7,7 +7,6 @@
  * @copyright Copyright (c) 2022
  */
 
-
 #ifndef DATABASE_H
 #define DATABASE_H
 

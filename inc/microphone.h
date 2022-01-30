@@ -7,7 +7,6 @@
  * @copyright Copyright (c) 2022
  */
 
-
 #ifndef MICROPHONE_H
 #define MICROPHONE_H
 

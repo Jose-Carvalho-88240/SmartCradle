@@ -24,20 +24,20 @@ static struct device* dht11Device_device = NULL;
 static dev_t dht11Device_majorminor;
 static struct cdev c_dev;  // Character device structure
 
-static struct class *s_pDeviceClass;
-static struct device *s_pDeviceObject;
-struct GpioRegisters *s_pGpioRegisters;
+/* Registers */
+struct GpioRegisters *pGPIORegisters;
 
+/* Device Pin */
 static const int DATA = 25;
 
 /*
  * Waits for the GPIO to change its level before reaching
  * the timeout (in us).
  */ 
-static int wait(struct GpioRegisters *s_pGpioRegisters, int GPIO, bool level, int timeout)
+static int wait(struct GpioRegisters *pGPIORegisters, int GPIO, bool level, int timeout)
 {
     int cnt = 0;
-    while (level == GetGPIOValue(s_pGpioRegisters,GPIO)) {
+    while (level == GetGPIOValue(pGPIORegisters,GPIO)) {
         if (cnt > timeout) {
             return 0;
         }
@@ -148,7 +148,7 @@ int dht11_device_close(struct inode *p_inode, struct file * pfile){
 int dht11_device_open(struct inode* p_indode, struct file *p_file){
 
 	pr_alert("%s: called\n",__FUNCTION__);
-	p_file->private_data = (struct GpioRegisters *) s_pGpioRegisters;
+	p_file->private_data = (struct GpioRegisters *) pGPIORegisters;
 	return 0;
 }
 
@@ -189,12 +189,12 @@ static int __init dht11Module_init(void) {
 		return ret;
 	}
 
-	s_pGpioRegisters = (struct GpioRegisters *)ioremap(GPIO_BASE, sizeof(struct GpioRegisters));
+	pGPIORegisters = (struct GpioRegisters *)ioremap(GPIO_BASE, sizeof(struct GpioRegisters));
 
-	SetGPIOFunction(s_pGpioRegisters, DATA, INPUT); //Input
-	SetGPIOPull(s_pGpioRegisters,DATA,NO_PULL);
+	SetGPIOFunction(pGPIORegisters, DATA, INPUT); //Input
+	SetGPIOPull(pGPIORegisters,DATA,NO_PULL);
 
-	pr_alert("map to virtual adresse: 0x%x\n", (unsigned)s_pGpioRegisters);
+	pr_alert("map to virtual adresse: 0x%x\n", (unsigned)pGPIORegisters);
 
 	return 0;
 }
@@ -203,7 +203,7 @@ static void __exit dht11Module_exit(void) {
 	
 	pr_alert("%s: called\n",__FUNCTION__);
 
-	iounmap(s_pGpioRegisters);
+	iounmap(pGPIORegisters);
 	cdev_del(&c_dev);
 	device_destroy(dht11Device_class, dht11Device_majorminor);
 	class_destroy(dht11Device_class);

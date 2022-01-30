@@ -10,7 +10,7 @@
 #include <sys/syslog.h>
 #include <stdio.h>
 #include <sys/socket.h>
-#include <mqueue.h> /* mq_* functions */
+#include <mqueue.h>
 #include <sys/types.h>
 #include <resolv.h>
 #include <netdb.h>

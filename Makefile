@@ -1,13 +1,15 @@
-# documentation
-DOXYGEN = /usr/local/bin/doxygen
-DOXYFILE = Doxyfile
+# Directories
 DOCDIR = doc
-
 BINDIR := bin
 SOURCEDIR := src
-
 MDRIVERDIR := driver_motor
 DDRIVERDIR := driver_dht
+
+# Documentation
+DOXYGEN = /usr/local/bin/doxygen
+DOXYFILE = Doxyfile
+
+######################################
 
 all: localsystem drivers documentation
 
@@ -21,6 +23,6 @@ drivers:
 documentation:
 	$(DOXYGEN) $(DOXYFILE)
 
-# remove all built files
+# Remove all built files
 clean:
 	rm -f -r $(BINDIR)/* $(DOCDIR)/*

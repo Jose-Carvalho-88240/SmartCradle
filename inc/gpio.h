@@ -67,37 +67,37 @@ struct GpioRegisters
 /**
  * @brief Set GPIO Pin function
  * 
- * @param s_pGpioRegisters : Register structure
+ * @param pGPIORegisters : Register structure
  * @param GPIO : GPIO Pin
  * @param functionCode : Function (Input, Output)
  */
-void SetGPIOFunction(struct GpioRegisters *s_pGpioRegisters, int GPIO, int functionCode);
+void SetGPIOFunction(struct GpioRegisters *pGPIORegisters, int GPIO, int functionCode);
 
 /**
  * @brief Set GPIO Pin pull mode
  * 
- * @param s_pGpioRegisters : Register structure
+ * @param pGPIORegisters : Register structure
  * @param GPIO : GPIO Pin
  * @param pullCode : Pull mode (No pull, Pull-up, Pull-down)
  */
-void SetGPIOPull(struct GpioRegisters *s_pGpioRegisters, int GPIO, int pullCode);
+void SetGPIOPull(struct GpioRegisters *pGPIORegisters, int GPIO, int pullCode);
 
 /**
  * @brief Set GPIO Pin value
  * 
- * @param s_pGpioRegisters : Register structure
+ * @param pGPIORegisters : Register structure
  * @param GPIO : GPIO Pin
  * @param outputValue : Value desired for pin
  */
-void SetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO, _Bool outputValue);
+void SetGPIOValue(struct GpioRegisters *pGPIORegisters, int GPIO, _Bool outputValue);
 
 /**
  * @brief Get GPIO Pin value
  * 
- * @param s_pGpioRegisters : Register structure
+ * @param pGPIORegisters : Register structure
  * @param GPIO : GPIO Pin
  * @return int : GPIO Pin value
  */
-int GetGPIOValue(struct GpioRegisters *s_pGpioRegisters, int GPIO);
+int GetGPIOValue(struct GpioRegisters *pGPIORegisters, int GPIO);
 
 #endif

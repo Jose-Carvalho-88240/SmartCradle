@@ -10,7 +10,6 @@
 #include <linux/err.h>
 #include <linux/mm.h>
 #include <linux/io.h>
-
 #include "../inc/gpio.h"
 
 #define DEVICE_NAME "motordriver0"
@@ -22,10 +21,10 @@ static struct device* motordriverDevice_device = NULL;
 static dev_t motordriverDevice_majorminor;
 static struct cdev c_dev;  // Character device structure
 
-static struct class *s_pDeviceClass;
-static struct device *s_pDeviceObject;
-struct GpioRegisters *s_pGpioRegisters;
+/* Registers */
+struct GpioRegisters *pGPIORegisters;
 
+/* Device Pins */
 static const int IN3 = 23;
 static const int IN4 = 24;
 
@@ -64,7 +63,7 @@ int motordriver_device_close(struct inode *p_inode, struct file * pfile){
 int motordriver_device_open(struct inode* p_indode, struct file *p_file){
 
 	pr_alert("%s: called\n",__FUNCTION__);
-	p_file->private_data = (struct GpioRegisters *) s_pGpioRegisters;
+	p_file->private_data = (struct GpioRegisters *) pGPIORegisters;
 	return 0;
 	
 }
@@ -106,12 +105,12 @@ static int __init motordriverModule_init(void) {
 		return ret;
 	}
 
-	s_pGpioRegisters = (struct GpioRegisters *)ioremap(GPIO_BASE, sizeof(struct GpioRegisters));
+	pGPIORegisters = (struct GpioRegisters *)ioremap(GPIO_BASE, sizeof(struct GpioRegisters));
 
-	pr_alert("map to virtual adresse: 0x%x\n", (unsigned)s_pGpioRegisters);
+	pr_alert("map to virtual adresse: 0x%x\n", (unsigned)pGPIORegisters);
 	
-	SetGPIOFunction(s_pGpioRegisters, IN3, OUTPUT); //Output
-	SetGPIOFunction(s_pGpioRegisters, IN4, OUTPUT); //Output
+	SetGPIOFunction(pGPIORegisters, IN3, OUTPUT); //Output
+	SetGPIOFunction(pGPIORegisters, IN4, OUTPUT); //Output
 
 	return 0;
 }
@@ -120,10 +119,10 @@ static void __exit motordriverModule_exit(void) {
 	
 	pr_alert("%s: called\n",__FUNCTION__);
 	
-	SetGPIOFunction(s_pGpioRegisters, IN4, INPUT); //Input
-	SetGPIOFunction(s_pGpioRegisters, IN3, INPUT); //Input
+	SetGPIOFunction(pGPIORegisters, IN4, INPUT); //Input
+	SetGPIOFunction(pGPIORegisters, IN3, INPUT); //Input
 
-	iounmap(s_pGpioRegisters);
+	iounmap(pGPIORegisters);
 	cdev_del(&c_dev);
 	device_destroy(motordriverDevice_class, motordriverDevice_majorminor);
 	class_destroy(motordriverDevice_class);
