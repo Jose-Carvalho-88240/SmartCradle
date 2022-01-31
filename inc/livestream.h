@@ -22,10 +22,8 @@ void endServer();
 
 /**
  * @brief Start the livestream
- * 
- * @return int : 0 on success, 1 on error
  */
-int startLivestream();
+void startLivestream();
 
 /**
  * @brief Stop the livestream

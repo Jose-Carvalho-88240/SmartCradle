@@ -23,6 +23,9 @@ DAEMON_DEPS := $(INCDIR)/microphone.h
 # Flags
 CFLAGS = -g -lm -pthread -lsndfile -lpython3.9 -lcrypt -ldl -lutil -lrt
 
+# Cross-Compiling
+CC = arm-buildroot-linux-gnueabihf-gcc
+
 #######################################################################
 
 all: main daemon

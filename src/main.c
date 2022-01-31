@@ -29,9 +29,11 @@
 #include "../inc/motor.h"
 #include "../inc/dht.h"
 
-#define MSGQOBJ_NAME "/mqLocalDaemon" /**<Message queue name */
 #define SHMEMOBJ_NAME "/shLocalDaemon" /**<Shared memory name */
-#define MAX_MSG_LEN     128
+#define MSGQOBJ_NAME "/mqLocalDaemon" /**<Message queue name */
+#define MAX_MSG_LEN 10 /**<Message queue maximum message size */ 
+mqd_t msgq_id; /**<Message queue ID */
+struct mq_attr msgq_attr; /**<Message queue attributes */
 
 #define streamPrio 2 /**<tStartStopStream priority */
 #define motorPrio 2 /**<tStartStopMotor priority */
@@ -53,10 +55,6 @@ float databaseTemperature = 0; /**<Temperature to send to database */
 float databaseHumidity = 0; /**<Humidity to send to database */
 
 pid_t daemonPID; /**<Daemon PID */
-
-mqd_t msgq_id; /**<Message queue ID */
-struct mq_attr msgq_attr; /**<Message queue attributes */
-
 
 /**
  * @brief Initializes the thread parameters with defined priority
@@ -181,10 +179,8 @@ void *tStartStopStream (void *arg)
     {
         if(streamFlag && !getStreamStatus()) //If streamFlag is on
         {
-            if(startLivestream())
-                fprintf(stderr, "Error when starting stream.\n");
-            else
-                printf("Livestream has started.\n");
+            startLivestream();
+            printf("Livestream has started.\n");
         }
         else if(!streamFlag && getStreamStatus()) //If streamFlag is off
         {
@@ -260,9 +256,9 @@ void *tUpdateDatabase(void *arg)
        pthread_mutex_lock(&sensorFlag_mutex);
         if(sensorFlag)
         {
-                sensorFlag = 0;
-                send_temp_hum(databaseTemperature,databaseHumidity);
-                printf("Temperature and Humidity were updated in the database.\n");
+            sensorFlag = 0;
+            send_temp_hum(databaseTemperature,databaseHumidity);
+            printf("Temperature and Humidity were updated in the database.\n");
         }
         pthread_mutex_unlock(&sensorFlag_mutex);
 
@@ -289,9 +285,7 @@ void *tUpdateDatabase(void *arg)
             char *msg;
             msg = malloc(4);
             if(msg == NULL)
-            {
                 fprintf(stderr,"malloc() got error.\n");
-            }
             else
             {
                 //Set up the command LV-x

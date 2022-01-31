@@ -140,7 +140,7 @@ void *tWatchStreamFlag(void *arg)
                 if (!strncmp(msg, msg_type, strlen(msg_type))) //Checks if the command is valid
                 {
                     syslog(LOG_INFO, "Command valid.\n");
-                    isStreamActive = msg[3]; //Update variable with the current streamFlag value
+                    isStreamActive = msg[3]-'0'; //Update variable with the current streamFlag value
                     syslog(LOG_INFO, "Streaming is now %d.\n", isStreamActive);
                 }
                 else
