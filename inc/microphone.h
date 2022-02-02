@@ -10,8 +10,8 @@
 #ifndef MICROPHONE_H
 #define MICROPHONE_H
 
-#define ERR_OPEN 12
-#define ERR_READ 15
+#define ERR_OPEN 12 /**<Error when opening audio file*/ 
+#define ERR_READ 15 /**<Error when reading audio file*/ 
 
 /**
  * @brief Records a 2 second .wav audio from microphone
