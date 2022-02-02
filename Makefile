@@ -14,6 +14,7 @@ DOXYFILE = Doxyfile
 all: localsystem drivers documentation
 
 localsystem:
+	mkdir $(BINDIR)
 	$(MAKE) -C $(SOURCEDIR)
 
 drivers:
@@ -21,8 +22,9 @@ drivers:
 	$(MAKE) -C $(DDRIVERDIR)
 
 documentation:
+	mkdir $(DOCDIR)
 	$(DOXYGEN) $(DOXYFILE)
 
 # Remove all built files
 clean:
-	rm -f -r $(BINDIR)/* $(DOCDIR)/*
+	rm -rf $(BINDIR) $(DOCDIR)
