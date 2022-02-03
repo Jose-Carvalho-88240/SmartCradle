@@ -11,7 +11,7 @@ DatabaseHandler::DatabaseHandler(QObject *parent)
 {
     m_networkAccessManager = new QNetworkAccessManager(this);
     m_networkAccessManagerWithPatch = new QNetworkAccessManagerWithPatch(this);
-    setAPIKey("AIzaSyAYGB_1eoQ-KHXKjx1FBLnzmWjdpwAH2TQ");
+    /* API Key was hidden, but must be defined using setAPIKey(<API Key>)*/
     signinErroremail = false;
     signinErrorpassword = false;
     signupError = false;
