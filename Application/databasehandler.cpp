@@ -291,12 +291,11 @@ void DatabaseHandler::parseFlags(const QByteArray &response)
     qDebug() << response;
     QJsonDocument jdoc = QJsonDocument::fromJson(response);
 
-    temperature = jdoc.object().value("temperature").toInt();
-    humidity = jdoc.object().value("humidity").toInt();
+    temperature = jdoc.object().value("temperature").toDouble();
+    humidity = jdoc.object().value("humidity").toDouble();
     live_flag = jdoc.object().value("live_flag").toInt();
     swing_flag = jdoc.object().value("swing_flag").toInt();
     notification_flag = jdoc.object().value("notification_flag").toInt();
-
 }
 
 DatabaseHandler::~DatabaseHandler()

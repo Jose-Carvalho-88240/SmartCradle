@@ -149,8 +149,8 @@ void MainWindow::on_SignInLogInScreenButton_clicked()
         ui->LogInScreen_label->clear();
         ui->stackedWidget->setCurrentIndex(3); //go to main screen
         //write the values to the labels
-        ui->temp_label->setText(QString::number(db.getTemperature() , 'f', 2));
-        ui->hum_label->setText(QString::number(db.getHumidity() , 'f', 2));
+        ui->temp_label->setText(QString::number(db.getTemperature()));
+        ui->hum_label->setText(QString::number(db.getHumidity()));
         live_flag = 0;
         swing_flag = 0;
         db.sendLiveFlag(live_flag);
@@ -175,8 +175,8 @@ void MainWindow::updateAtInterval()
 
 void MainWindow::updateDisplayedValues()
 {
-    ui->temp_label->setText(QString::number(db.getTemperature() , 'f', 2));
-    ui->hum_label->setText(QString::number(db.getHumidity() , 'f', 2));
+    ui->temp_label->setText(QString::number(db.getTemperature()));
+    ui->hum_label->setText(QString::number(db.getHumidity()));
 }
 
 void MainWindow::on_SignOut_Button_clicked()
