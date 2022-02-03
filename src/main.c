@@ -95,6 +95,7 @@ static void signalHandler(int signo)
 		break;
 
         case (SIGINT):
+        case (SIGTERM):
             printf("Terminating program...\n");
             mq_unlink(MSGQOBJ_NAME); //unlink msgQ
             stopMotor(); //stop motor
@@ -323,7 +324,7 @@ int main (int argc, char *argv[])
     msgq_attr.mq_msgsize = 5;  
     msgq_attr.mq_curmsgs = 0; 
     msgq_id = mq_open(MSGQOBJ_NAME, O_WRONLY | O_CREAT | O_EXCL | O_NONBLOCK, S_IRWXU | S_IRWXG | S_IRWXO, &msgq_attr);
-    if(msgq_id == EEXIST) //If the message queue already exists
+    if(errno == EEXIST) //If the message queue already exists
     {
         mq_unlink(MSGQOBJ_NAME); //Unlink the message queue
         msgq_id = mq_open(MSGQOBJ_NAME, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG | S_IRWXO, NULL);

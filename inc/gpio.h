@@ -30,22 +30,16 @@
 
 /**
  * @brief Structure that contains GPIO Registers
- * 
- *		GPFSEL : Set pin function
- *		GPSET : Set pin HIGH
- *		GPCLR : Set pin LOW
- *		GPLEV : Pin value
- *		GPIO_PUP_PDN_CNTRL_REG : Set pin pull
  */
 struct GpioRegisters
 {
-	unsigned int GPFSEL[6];
+	unsigned int GPFSEL[6]; /**<Set pin function*/ 
 	unsigned int Reserved1;
-	unsigned int GPSET[2];
+	unsigned int GPSET[2]; /**<Set pin to HIGH*/ 
 	unsigned int Reserved2;
-	unsigned int GPCLR[2];
+	unsigned int GPCLR[2]; /**<Set pin to LOW*/ 
 	unsigned int Reserved3;
-	unsigned int GPLEV[2];
+	unsigned int GPLEV[2]; /**<Get pin value*/ 
 	unsigned int Reserved4;
 	unsigned int GPEDS[2];
 	unsigned int Reserved5;
@@ -61,7 +55,7 @@ struct GpioRegisters
 	unsigned int Reserved10;
 	unsigned int GPAFEN[2];
 	unsigned int Reserved11[21];
-	unsigned int GPIO_PUP_PDN_CNTRL_REG[4];
+	unsigned int GPIO_PUP_PDN_CNTRL_REG[4]; /**<Set pin pull*/ 
 };
 
 /**

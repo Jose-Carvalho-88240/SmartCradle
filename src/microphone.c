@@ -12,7 +12,7 @@
 #include <sys/wait.h>
 #include "../inc/microphone.h"
 
-#define THRESHOLD -30  // Audio threshold [dB]
+#define THRESHOLD -35  // Audio threshold [dB]
 #define LIMIT 3
 
 int startRecording()
