@@ -12,6 +12,7 @@ DOXYFILE = Doxyfile
 ######################################
 
 all: localsystem drivers documentation
+src : localsystem drivers
 
 localsystem:
 	mkdir -p $(BINDIR)
