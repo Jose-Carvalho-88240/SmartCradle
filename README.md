@@ -3,7 +3,7 @@
 
 To **compile the program for the target**:
     
-    make all
+    make src
 
 - Images will be compiled to bin/
 
@@ -15,7 +15,7 @@ To **generate the software documentation**:
 
 To **compile the program for the target and generate the software documentation**:
     
-    make
+    make all
 
 To **clean the compiled images and documentation**:
 
