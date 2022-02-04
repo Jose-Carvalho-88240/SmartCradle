@@ -188,6 +188,8 @@ void MainWindow::on_SignOut_Button_clicked()
     db.sendSwingFlag(swing_flag);
     db.clear();
     ui->stackedWidget->setCurrentIndex(0);
+    ui->Swing_Button->setStyleSheet("background-color: rgb(52, 84, 136);color: white;border-radius:14px;font: bold; padding: 4px;");
+    ui->Livestream_Button->setStyleSheet("background-color: rgb(52, 84, 136);color: white;border-radius:14px;font: bold; padding: 4px;");
 }
 
 
