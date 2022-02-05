@@ -302,8 +302,8 @@ void *tUpdateDatabase(void *arg)
                     errno=ret;
                     perror("mq_send()");
                 }
+                free(msg);
             }
-            free(msg);
         }
         streamFlag = dStreamFlag;
         pthread_mutex_unlock(&streamFlag_mutex);
