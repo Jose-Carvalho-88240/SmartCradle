@@ -1,5 +1,14 @@
 # README
-# Compiling the program
+
+# SmartCradle
+
+<p align="center">
+    <b>Not your ordinary babysitter.</b><br>
+    <br>
+    <img width="250" src="https://github.com/Jose-Carvalho-88240/SmartCradle/blob/main/logo.png?raw=true" alt="SmartCradle"/>
+</p>
+
+### Compiling the program
 
 To **compile the program for the target**:
     
@@ -21,10 +30,14 @@ To **clean the compiled images and documentation**:
 
     make clean
     
-# Running the program
+### Running the program
 
 Copy every file in **bin** folder and **src/database.py** to the development board:
 
     scp bin/* src/database.py root@<Raspberry IP>:<Location>
     
 Call **main.elf** to run the program. The daemon and device drivers will be called automatically.
+
+### Authors:
+- [José Carvalho](https://github.com/Jose-Carvalho-88240)
+- [João Carneiro](https://github.com/JoaoLuis00)
