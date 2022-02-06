@@ -401,6 +401,7 @@ int main (int argc, char *argv[])
     signal(SIGALRM, signalHandler);
     signal(SIGUSR1, signalHandler);
     signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
 
     /*
     *   Call the initialization functions for the modules
