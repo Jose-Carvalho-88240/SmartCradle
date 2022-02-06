@@ -11,18 +11,7 @@
 #include <sys/wait.h>
 #include "../inc/livestream.h"
 
-static _Bool streamRunning; /* Status of the stream */
-
-void initServer()
-{
-    system("nginx");
-    streamRunning = 0;
-}
-
-void endServer()
-{
-    system("nginx -s stop");
-}
+static _Bool streamRunning = 0; /* Status of the stream */
 
 void startLivestream()
 {

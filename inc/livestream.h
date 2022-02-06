@@ -11,16 +11,6 @@
 #define LIVESTREAM_H
 
 /**
- * @brief Start the server
- */
-void initServer();
-
-/**
- * @brief Close the server
- */
-void endServer();
-
-/**
  * @brief Start the livestream
  */
 void startLivestream();

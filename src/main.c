@@ -100,7 +100,6 @@ static void signalHandler(int signo)
             mq_unlink(MSGQOBJ_NAME); //unlink msgQ
             stopMotor(); //stop motor
             stopLivestream(); //stop livestream
-            endServer(); //close server
             remMotor(); //remove motor device driver
             remDHT11(); //remove sensor device driver
             kill(daemonPID,SIGTERM); //kill daemon
@@ -405,11 +404,9 @@ int main (int argc, char *argv[])
 
     /*
     *   Call the initialization functions for the modules
-    *       @ Streaming
     *       @ DHT11 Sensor
     *       @ Motor Driver
     */
-    initServer();
     initDHT11();
     initMotor();
 

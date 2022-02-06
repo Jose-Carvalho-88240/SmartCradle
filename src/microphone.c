@@ -82,7 +82,7 @@ int processAudio(float *loudness)
 
     *loudness = ret;
     
-    if(ret > THRESHOLD)
+    if(ret >= THRESHOLD)
     {
         ret = 0;
         if(++crying_counter >= LIMIT)
@@ -92,7 +92,10 @@ int processAudio(float *loudness)
         }
         return ret;
     }
-    crying_counter = 0;
+
+    if(crying_counter > 0)
+        crying_counter--;
+    
     return 0;
 }
 
