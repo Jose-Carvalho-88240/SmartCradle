@@ -80,7 +80,7 @@ void *tDetectCrying(void *local_pid)
     {
         if (!isStreamActive) //If streaming is not active
         {
-            float loudness = 0;
+            double loudness;
 
             syslog(LOG_INFO, "Recording will start.\n");
             ret = startRecording();

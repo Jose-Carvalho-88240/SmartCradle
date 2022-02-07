@@ -3,7 +3,11 @@
         "typeinfo": "c",
         "dht.h": "c",
         "utils.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "cmath": "c",
+        "bit": "c",
+        "*.tcc": "c",
+        "random": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
