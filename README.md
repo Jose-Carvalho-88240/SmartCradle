@@ -8,6 +8,8 @@
     <img width="250" src="https://github.com/Jose-Carvalho-88240/SmartCradle/blob/main/logo.png?raw=true" alt="SmartCradle"/>
 </p>
 
+Software Documentation can be found at [Documentation](https://rawcdn.githack.com/Jose-Carvalho-88240/SmartCradle/dcb9e30f353c03f342479c0d7f9408a93bd66c23/doc/files/html/index.html)
+
 ### Compiling the program
 
 To **compile the program for the target**:
