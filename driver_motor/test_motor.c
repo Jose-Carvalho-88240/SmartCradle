@@ -6,7 +6,7 @@
 int main(void)
 {
     sleep(5);
-    printf("Devicer Drivers - Led Blinking\n");
+    printf("Devicer Drivers - Motor\n");
 
     unsigned int count = 0;
     printf("\n");
@@ -14,28 +14,22 @@ int main(void)
     printf("\n\nInserting Device Driver...\n");
     system("insmod motordriver.ko");
 
-    printf("\nCheck devicer driver:\n");
-    system("lsmod");
-
-    printf("\nIs the device driver in /dev:\n");
-    system("ls -l /dev/motordriver0");
     sleep(3);
 
-    int fd0 = open("/dev/led0", O_WRONLY);
-    char ledOn = '1', ledOff = '0';
-    char r;
+    int fd0 = open("/dev/motordriver0", O_WRONLY);
+    char motorOn = '1', motorOff = '0';
     printf("\nStarting loop (5 times):");
     sleep(1);
     while(count != 5)
     {
-        
-        write(fd0, &ledOn, 1);
+        write(fd0, &motorOn, 1);
         printf("\nandar!");
         sleep(2);
        
-        write(fd0, &ledOff, 1);
+        write(fd0, &motorOff, 1);
         printf("\nparar!");
         sleep(2);
+        
         count++;
     }
     printf("Closing Device Driver.\n");
